@@ -1,18 +1,20 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Dialog Analyzer v5.1 - Risk-Aware Edition
-Анализатор диалоговых потоков с визуализацией рисков
+Dialog Analyzer v5.1 - Risk-Aware + Quality Metrics Edition
+Анализатор диалоговых потоков с визуализацией рисков и метриками качества
 
 Принципы:
 - Читаем данные "как есть" (без изменений)
 - Визуализируем все проблемы цветом
 - Подсвечиваем риски, но не исправляем
 - Сохраняем audit trail для ручного review
+- Измеряем качество продукционных данных
 """
 
 import os
 import sys
+import json
 
 from utils.config import *
 from utils.loaders import load_intents
@@ -38,6 +40,28 @@ except ImportError:
     RISK_ANALYSIS_AVAILABLE = False
     print("⚠️  Risk analysis module not available")
 
+# Import quality analyzers (NEW!)
+try:
+    from utils.regex_analyzer import analyze_intent_regex_patterns
+    REGEX_ANALYSIS_AVAILABLE = True
+except ImportError:
+    REGEX_ANALYSIS_AVAILABLE = False
+    print("⚠️  Regex analysis module not available")
+
+try:
+    from utils.entry_point_analyzer import analyze_entry_points
+    ENTRY_POINT_ANALYSIS_AVAILABLE = True
+except ImportError:
+    ENTRY_POINT_ANALYSIS_AVAILABLE = False
+    print("⚠️  Entry point analysis module not available")
+
+try:
+    from utils.freshness_analyzer import analyze_data_freshness, get_update_distribution
+    FRESHNESS_ANALYSIS_AVAILABLE = True
+except ImportError:
+    FRESHNESS_ANALYSIS_AVAILABLE = False
+    print("⚠️  Freshness analysis module not available")
+
 def print_section(title: str, width: int = 80):
     """Print formatted section header"""
     print("\n" + "="*width)
@@ -46,9 +70,10 @@ def print_section(title: str, width: int = 80):
 
 def main():
     """Main analyzer function"""
-    print_section("🚀 DIALOG ANALYZER v5.1 - RISK-AWARE")
-    print("📜 Режим: Read-Only Analysis with Risk Visualization")
-    print("🛡️  Данные не изменяются - только визуализация рисков")
+    print_section("🚀 DIALOG ANALYZER v5.1 - QUALITY METRICS EDITION")
+    print("📜 Режим: Read-Only Analysis with Quality Metrics")
+    print("🛡️  Данные не изменяются - только визуализация и метрики")
+    print("📊 НОВОЕ: Анализ качества production-ready данных")
     print()
     
     # Check input file
@@ -108,9 +133,31 @@ def main():
         all_data['graph_analysis'] = graph_analysis
         validation_results['graph_analysis'] = graph_analysis
     
-    # 5. Risk Analysis (NEW!)
+    # 5. Quality Metrics Analysis (NEW!)
+    quality_metrics = {}
+    print_section("📊 ЭТАП 4: Анализ качества данных")
+    
+    # 5.1 Regex complexity
+    if REGEX_ANALYSIS_AVAILABLE:
+        regex_analysis = analyze_intent_regex_patterns(intents)
+        quality_metrics['regex_complexity'] = regex_analysis
+    
+    # 5.2 Entry point diversity
+    if ENTRY_POINT_ANALYSIS_AVAILABLE:
+        entry_point_analysis = analyze_entry_points(intents)
+        quality_metrics['entry_points'] = entry_point_analysis
+    
+    # 5.3 Data freshness
+    if FRESHNESS_ANALYSIS_AVAILABLE:
+        freshness_analysis = analyze_data_freshness(intents)
+        if freshness_analysis['has_version_data']:
+            update_dist = get_update_distribution(intents)
+            freshness_analysis['update_distribution'] = update_dist
+        quality_metrics['data_freshness'] = freshness_analysis
+    
+    # 6. Risk Analysis
     if RISK_ANALYSIS_AVAILABLE and ENABLE_VALIDATION:
-        print_section("🛡️  ЭТАП 4: Анализ рисков")
+        print_section("🛡️  ЭТАП 5: Анализ рисков")
         
         # Analyze risks
         intent_risks = analyze_intent_risks(intents, validation_results)
@@ -153,15 +200,25 @@ def main():
         # Display risk legend
         print(generate_risk_legend())
         
-        # Export risk report
+        # Export comprehensive report with quality metrics
         risk_report_path = os.path.join(OUTPUT_DIR, 'risk_analysis.json')
         export_risk_report(intent_risks, risk_report_path)
         
+        # Add quality metrics to report
+        if quality_metrics:
+            with open(risk_report_path, 'r', encoding='utf-8') as f:
+                report = json.load(f)
+            report['quality_metrics'] = quality_metrics
+            with open(risk_report_path, 'w', encoding='utf-8') as f:
+                json.dump(report, f, indent=2, ensure_ascii=False)
+            print(f"\n📊 Метрики качества добавлены в отчёт")
+        
         # Store in all_data for diagram generation
         all_data['intent_risks'] = intent_risks
+        all_data['quality_metrics'] = quality_metrics
     
-    # 6. Statistics
-    print_section("📊 ЭТАП 5: Статистика")
+    # 7. Statistics
+    print_section("📊 ЭТАП 6: Статистика")
     print(f"   Всего интентов: {len(intents)}")
     print(f"   Переходов: {len(all_data.get('transitions', []))}")
     
@@ -194,7 +251,7 @@ def main():
     print(f"   • validation_report.json - полный отчёт валидации")
     
     if RISK_ANALYSIS_AVAILABLE:
-        print(f"   • risk_analysis.json - анализ рисков с цветовой кодировкой")
+        print(f"   • risk_analysis.json - анализ рисков + метрики качества")
     
     if ENABLE_VALIDATION:
         summary = validation_results.get('summary', {})
@@ -209,6 +266,7 @@ def main():
     print("🔍 ВАЖНО: Исходные данные НЕ БЫЛИ ИЗМЕНЕНЫ")
     print("🎨 Проблемные узлы будут подсвечены на диаграммах")
     print("📊 Используйте risk_analysis.json для ручного review")
+    print("✨ Метрики качества доступны в том же отчёте")
     print()
     
     return 0
