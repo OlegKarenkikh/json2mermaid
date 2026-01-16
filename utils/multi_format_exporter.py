@@ -103,13 +103,19 @@ def build_id_mappings(intents: List[Dict]) -> Dict[str, Any]:
     """
     Строит маппинги для разрешения связей между интентами.
     Связи могут быть через intent_id, symbol_code или action_id.
+    
+    ВАЖНО: В данных связи часто задаются через symbol_code, а не intent_id!
+    Например: REDIRECT_TO_INTENT ccConsultationAutoOsagoChange
+    где ccConsultationAutoOsagoChange - это symbol_code целевого интента.
     """
     mappings = {
         'by_intent_id': {},
         'by_symbol_code': {},
         'symbol_to_intent': {},
+        'intent_to_symbol': {},
         'all_intent_ids': set(),
         'all_symbol_codes': set(),
+        'all_known_refs': set(),  # Все известные идентификаторы (intent_id + symbol_code)
     }
     
     for intent in intents:
@@ -119,38 +125,47 @@ def build_id_mappings(intents: List[Dict]) -> Dict[str, Any]:
         if intent_id:
             mappings['by_intent_id'][intent_id] = intent
             mappings['all_intent_ids'].add(intent_id)
+            mappings['all_known_refs'].add(intent_id)
         
         if symbol_code:
             mappings['by_symbol_code'][symbol_code] = intent
             mappings['all_symbol_codes'].add(symbol_code)
+            mappings['all_known_refs'].add(symbol_code)
             if intent_id:
                 mappings['symbol_to_intent'][symbol_code] = intent_id
+                mappings['intent_to_symbol'][intent_id] = symbol_code
     
     return mappings
 
 
-def resolve_target(target: str, mappings: Dict) -> Tuple[str, bool]:
+def resolve_target(target: str, mappings: Dict) -> Tuple[str, str, bool]:
     """
-    Разрешает идентификатор цели в intent_id.
-    Returns: (resolved_id, is_internal)
+    Разрешает идентификатор цели.
+    
+    Args:
+        target: Идентификатор цели (может быть intent_id или symbol_code)
+        mappings: Маппинги из build_id_mappings()
+    
+    Returns: 
+        (node_id для графа, label для отображения, is_internal)
+        
+    ВАЖНО: Связи обычно задаются через symbol_code!
     """
     if not target:
-        return target, False
+        return target, target, False
     
-    # Если это intent_id
-    if target in mappings.get('all_intent_ids', set()):
-        return target, True
-    
-    # Если это symbol_code
-    if target in mappings.get('symbol_to_intent', {}):
-        return mappings['symbol_to_intent'][target], True
-    
-    # Если это symbol_code без маппинга на intent_id
+    # Если это symbol_code - используем его как node_id
     if target in mappings.get('all_symbol_codes', set()):
-        return target, True
+        return target, target, True
+    
+    # Если это intent_id - проверяем есть ли symbol_code
+    if target in mappings.get('all_intent_ids', set()):
+        # Предпочитаем symbol_code для консистентности
+        symbol = mappings.get('intent_to_symbol', {}).get(target, target)
+        return symbol if symbol else target, target, True
     
     # Не найдено - внешняя цель
-    return target, False
+    return target, target, False
 
 
 def export_graphviz_dot(
@@ -191,21 +206,40 @@ def export_graphviz_dot(
     
     # Строим маппинги для разрешения связей
     mappings = build_id_mappings(intent_list)
-    all_intent_ids = mappings['all_intent_ids']
-    all_symbol_codes = mappings['all_symbol_codes']
-    all_known_ids = all_intent_ids | all_symbol_codes
+    all_known_refs = mappings['all_known_refs']
     
-    intent_by_id = mappings['by_intent_id']
+    # Определяем node_id для каждого интента (предпочитаем symbol_code)
+    intent_node_ids = {}  # intent_id -> node_id для графа
+    node_to_intent = {}   # node_id -> intent
     
-    # Находим внешние цели (разрешаем через маппинги)
+    for intent in intent_list:
+        intent_id = _safe_str(intent.get('intent_id'), '')
+        symbol_code = _safe_str(intent.get('symbol_code'), '')
+        
+        # Предпочитаем symbol_code как node_id (так задаются связи!)
+        node_id = symbol_code if symbol_code else intent_id
+        if node_id:
+            intent_node_ids[intent_id] = node_id
+            node_to_intent[node_id] = intent
+            if symbol_code and intent_id:
+                intent_node_ids[symbol_code] = node_id  # symbol_code тоже резолвится
+    
+    # Находим внешние цели
     external_targets = set()
     internal_edges = 0
+    
     for t in transition_list:
-        resolved, is_internal = resolve_target(t.target_id, mappings)
-        if not is_internal:
-            external_targets.add(t.target_id)
-        else:
+        target = t.target_id
+        if target in all_known_refs:
             internal_edges += 1
+        else:
+            external_targets.add(target)
+    
+    # Функция для получения node_id интента (предпочитаем symbol_code)
+    def get_intent_node_id(intent):
+        symbol_code = _safe_str(intent.get('symbol_code'), '')
+        intent_id = _safe_str(intent.get('intent_id'), '')
+        return symbol_code if symbol_code else intent_id
     
     # Группировка по типам
     if cluster_by_type:
@@ -224,17 +258,20 @@ def export_graphviz_dot(
             
             for intent in type_intents:
                 intent_id = _safe_str(intent.get('intent_id'), '')
-                title = _safe_str(intent.get('title'), intent_id)
+                symbol_code = _safe_str(intent.get('symbol_code'), '')
+                title = _safe_str(intent.get('title'), symbol_code or intent_id)
                 title = _truncate(title, max_label_len)
                 
                 fill_color, border_color = _get_node_color(record_type)
-                node_id = _make_dot_node_id(intent_id)
+                # Используем symbol_code как node_id (так задаются связи!)
+                graph_node_id = symbol_code if symbol_code else intent_id
+                node_id = _make_dot_node_id(graph_node_id)
                 
                 lines.append(f'        {node_id} [')
                 lines.append(f'            label="{_escape_dot_string(title)}"')
                 lines.append(f'            fillcolor="{fill_color}"')
                 lines.append(f'            color="{border_color}"')
-                lines.append(f'            tooltip="{_escape_dot_string(intent_id)}"')
+                lines.append(f'            tooltip="{_escape_dot_string(symbol_code or intent_id)}"')
                 lines.append('        ];')
             
             lines.append('    }')
@@ -244,24 +281,26 @@ def export_graphviz_dot(
         # Без кластеризации
         for intent in intent_list:
             intent_id = _safe_str(intent.get('intent_id'), '')
-            title = _safe_str(intent.get('title'), intent_id)
+            symbol_code = _safe_str(intent.get('symbol_code'), '')
+            title = _safe_str(intent.get('title'), symbol_code or intent_id)
             title = _truncate(title, max_label_len)
             record_type = _safe_str(intent.get('record_type'), '')
             
             fill_color, border_color = _get_node_color(record_type)
-            node_id = _make_dot_node_id(intent_id)
+            graph_node_id = symbol_code if symbol_code else intent_id
+            node_id = _make_dot_node_id(graph_node_id)
             
             lines.append(f'    {node_id} [')
             lines.append(f'        label="{_escape_dot_string(title)}"')
             lines.append(f'        fillcolor="{fill_color}"')
             lines.append(f'        color="{border_color}"')
-            lines.append(f'        tooltip="{_escape_dot_string(intent_id)}"')
+            lines.append(f'        tooltip="{_escape_dot_string(symbol_code or intent_id)}"')
             lines.append('    ];')
         lines.append('')
     
-    # Внешние узлы
+    # Внешние узлы (цели которых нет в файле)
     if external_targets:
-        lines.append('    // External targets')
+        lines.append('    // External targets (not in current file)')
         for ext_id in external_targets:
             node_id = _make_dot_node_id(ext_id)
             fill_color, border_color = _get_node_color('', is_external=True)
@@ -276,11 +315,16 @@ def export_graphviz_dot(
             lines.append('    ];')
         lines.append('')
     
-    # Рёбра
+    # Рёбра - source_id это intent_id, нужно преобразовать в symbol_code
     lines.append('    // Edges')
     for t in transition_list:
-        src_id = _make_dot_node_id(t.source_id)
+        # Резолвим source через маппинг intent_id -> symbol_code
+        src_symbol = mappings.get('intent_to_symbol', {}).get(t.source_id, t.source_id)
+        src_id = _make_dot_node_id(src_symbol)
+        
+        # target_id уже должен быть symbol_code (так задаются связи)
         tgt_id = _make_dot_node_id(t.target_id)
+        
         style, color = _get_edge_style(t.transition_type)
         
         edge_attrs = [f'color="{color}"']
