@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Dialog Analyzer v5.1 ROBUST PARSING
+Dialog Analyzer v5.3 ROBUST PARSING + COMPREHENSIVE TRANSITIONS
 Анализатор диалоговых потоков с надёжным парсингом невалидного JSONL
 """
 
@@ -69,12 +69,12 @@ def print_header():
     """Печать красивого заголовка"""
     print()
     print("=" * 80)
-    print("🚀 DIALOG ANALYZER v5.1 - ROBUST PARSING EDITION")
+    print("🚀 DIALOG ANALYZER v5.3 - COMPREHENSIVE TRANSITIONS")
     print("=" * 80)
     print("📜 Режим: Read-Only Analysis with Robust JSONL Parsing")
     print("🛡️  Данные не изменяются - только визуализация и метрики")
     print("🔧 НОВОЕ: Обработка невалидного JSONL (Extra data, multiple objects)")
-    print("📊 ВКЛЮЧЕНО: Риски, граф, метрики качества")
+    print("📊 ВКЛЮЧЕНО: Риски, граф, метрики качества, все типы переходов")
     print()
 
 def main():
@@ -186,12 +186,16 @@ def main():
     all_data = second_pass(intents, all_data)
     all_data = third_pass(intents, all_data)
     all_data = fourth_pass(intents, all_data)
-    transitions = [(t.source_id, t.target_id) for t in all_data.get('transitions', [])]
+    
+    # Получаем полные объекты Transition
+    transitions_full = all_data.get('transitions', [])
+    # Для graph_analyzer нужны кортежи
+    transitions_tuples = [(t.source_id, t.target_id) for t in transitions_full]
 
     # 4. Анализ графа
     if GRAPH_ANALYSIS_AVAILABLE and ENABLE_VALIDATION:
         redirect_map = validation_results.get('redirects', {}).get('redirect_map', {})
-        graph_analysis = analyze_graph_structure(intents, redirect_map, transitions)
+        graph_analysis = analyze_graph_structure(intents, redirect_map, transitions_tuples)
         all_data['graph_analysis'] = graph_analysis
         validation_results['graph_analysis'] = graph_analysis
 
@@ -274,25 +278,31 @@ def main():
         all_data['intent_risks'] = intent_risks
         all_data['quality_metrics'] = quality_metrics
 
-    # 6.1 Diagram export (Mermaid)
+    # 6.1 Diagram export (Mermaid) - Передаём полные объекты Transition
     if EXPORT_DIAGRAMS and DIAGRAM_EXPORT_AVAILABLE:
+        print()
+        print("=" * 80)
+        print("🖌️  ЭТАП 6: Генерация диаграмм")
+        print("=" * 80)
+        
         diagram_path = os.path.join(OUTPUT_DIR, "graph.mmd")
         export_mermaid_graph(
             intents=intents,
-            transitions=transitions,
+            transitions=transitions_full,  # Полные объекты!
             intent_risks=all_data.get('intent_risks'),
             output_path=diagram_path,
             include_legend=INCLUDE_LEGEND,
         )
-        print(f"\n🖼️  Диаграмма Mermaid сохранена: {diagram_path}")
+        print(f"\n🖌️  Диаграмма Mermaid сохранена: {diagram_path}")
+        print(f"👁️  Просмотр: https://mermaid.live/")
     
     # 7. Статистика
     print()
     print("=" * 80)
-    print("📊 ЭТАП 6: Итоговая статистика")
+    print("📊 ЭТАП 7: Итоговая статистика")
     print("=" * 80)
     print(f"📦 Всего интентов: {len(intents)}")
-    print(f"🔗 Переходов: {len(all_data.get('transitions', []))}")
+    print(f"🔗 Переходов: {len(transitions_full)}")
     
     # Подсчёт по типам
     type_counts = {}
@@ -332,6 +342,8 @@ def main():
         print(f"📄 Отчёт валидации: {OUTPUT_DIR}/validation_report.json")
     if RISK_ANALYSIS_AVAILABLE:
         print(f"📄 Отчёт рисков: {OUTPUT_DIR}/risk_analysis.json")
+    if EXPORT_DIAGRAMS:
+        print(f"🖌️  Диаграмма: {OUTPUT_DIR}/graph.mmd")
     print()
     print("💡 Используйте полученные данные для оптимизации диалоговых потоков")
     print()
