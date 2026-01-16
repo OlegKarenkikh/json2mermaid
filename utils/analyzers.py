@@ -238,6 +238,32 @@ def _extract_transitions(intent: Dict) -> List[Transition]:
     return transitions
 
 
+def _safe_str(value: Any, default: str = '') -> str:
+    """
+    Безопасное преобразование в строку.
+    Обрабатывает NaN, None, float и другие невалидные значения.
+    """
+    if value is None:
+        return default
+    
+    # Проверяем на NaN (float)
+    if isinstance(value, float):
+        import math
+        if math.isnan(value):
+            return default
+        return str(value)
+    
+    # Для строк - просто возвращаем
+    if isinstance(value, str):
+        return value
+    
+    # Все остальное - преобразуем в строку
+    try:
+        return str(value)
+    except Exception:
+        return default
+
+
 def extract_detailed_flow(intent: Dict) -> Dict[str, Any]:
     """
     Извлекает полную логику обработки интента включая:
@@ -245,13 +271,13 @@ def extract_detailed_flow(intent: Dict) -> Dict[str, Any]:
     - Ветвления по слотам
     - Все возможные переходы
     """
-    intent_id = intent.get('intent_id', 'unknown')
-    title = intent.get('title', '')
+    intent_id = _safe_str(intent.get('intent_id'), 'unknown')
+    title = _safe_str(intent.get('title'), '')
     
     flow = {
         'intent_id': intent_id,
         'title': title,
-        'record_type': intent.get('record_type', ''),
+        'record_type': _safe_str(intent.get('record_type'), ''),
         'entry_conditions': [],
         'branches': [],
         'transitions': []
