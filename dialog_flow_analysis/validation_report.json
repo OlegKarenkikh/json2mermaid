@@ -1,32 +1,46 @@
 {
-  "validation_timestamp": "2026-01-16T08:05:02.847360",
+  "validation_timestamp": "2026-01-16T09:45:41.603953",
   "version": "5.1",
   "summary": {
-    "total_intents": 12,
+    "total_intents": 3,
     "error_count": 0,
-    "warning_count": 0,
+    "warning_count": 6,
     "is_valid": true,
-    "has_warnings": false
+    "has_warnings": true
   },
   "details": {
     "intent_ids": {
-      "total": 12,
-      "unique": 12,
+      "total": 3,
+      "unique": 3,
       "duplicates": {},
       "duplicate_count": 0,
       "is_valid": true
     },
     "titles": {
-      "total_titles": 12,
+      "total_titles": 3,
       "duplicate_titles": {},
       "duplicate_count": 0,
       "is_valid": true
     },
     "nan_fields": {
-      "total_intents": 12,
-      "nan_by_field": {},
-      "nan_percentage": {},
-      "is_valid": true
+      "total_intents": 3,
+      "nan_by_field": {
+        "intent_settings": 3,
+        "routing_params": 3,
+        "routing_params.callcenters": 3,
+        "routing_params.languages": 3,
+        "routing_params.usergroups": 3,
+        "routing_params.skills": 3
+      },
+      "nan_percentage": {
+        "intent_settings": 100.0,
+        "routing_params": 100.0,
+        "routing_params.callcenters": 100.0,
+        "routing_params.languages": 100.0,
+        "routing_params.usergroups": 100.0,
+        "routing_params.skills": 100.0
+      },
+      "is_valid": false
     },
     "empty_content": {
       "empty_answers": [],

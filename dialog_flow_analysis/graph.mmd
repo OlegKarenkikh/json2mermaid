@@ -1,0 +1,31 @@
+flowchart TD
+  n_1["Greeting"]
+  n_2["Help"]
+  n_3["Exit"]
+  style n_1 fill:#FFCC44,stroke:#886600,stroke-width:1px
+  style n_2 fill:#FFCC44,stroke:#886600,stroke-width:1px
+  style n_3 fill:#FFCC44,stroke:#886600,stroke-width:1px
+
+%% Legend
+  subgraph Legend
+    Lcritical["CRITICAL"]
+    Lhigh["HIGH"]
+    Lmedium["MEDIUM"]
+    Llow["LOW"]
+    Linfo["INFO"]
+  end
+
+  style Lcritical fill:#FF4444,stroke:#AA0000,stroke-width:3px,color:#fff
+  style Lhigh fill:#FF8844,stroke:#CC4400,stroke-width:2px
+  style Lmedium fill:#FFCC44,stroke:#886600,stroke-width:1px
+  style Llow fill:#88CCFF,stroke:#0066AA,stroke-width:1px,stroke-dasharray:5
+  style Linfo fill:#CCCCCC,stroke:#666666,stroke-width:1px,stroke-dasharray:2
+
+%% Transition Types:
+%% --> button redirect
+%% ==> direct redirect
+%% -.-> conditional (if/else)
+%% -..-> fallback
+
+%% Total nodes: 3
+%% Total edges: 0

@@ -1,7 +1,8 @@
-# utils/analyzers.py v5.3
-"""Интент анализ - 4-проходная система"""
+# utils/analyzers.py v5.4
+"""Интент анализ - 4-проходная система с расширенным извлечением переходов"""
 
-from typing import Dict, List, Any
+import re
+from typing import Dict, List, Any, Optional
 from collections import defaultdict
 from .dataclasses import IntentClassification, Transition
 
@@ -29,6 +30,61 @@ def _safe_list(value: Any, default: List = None) -> List:
     
     # Все остальное - возвращаем default
     return default
+
+def _extract_redirect_from_text(answer_text: str) -> List[str]:
+    """
+    Извлекает REDIRECT_TO_INTENT из текста ответа
+    Паттерн: REDIRECT_TO_INTENT <intent_id>
+    """
+    if not answer_text:
+        return []
+    
+    pattern = r'REDIRECT_TO_INTENT\s+(\S+)'
+    matches = re.findall(pattern, answer_text)
+    return matches
+
+
+def _extract_buttons_from_markdown(answer_text: str) -> List[Dict[str, str]]:
+    """
+    Извлекает кнопки из markdown формата в тексте ответа
+    Формат: [Текст кнопки](type:action action:intent_id)
+    """
+    if not answer_text:
+        return []
+    
+    buttons = []
+    # Паттерн для markdown кнопок: [текст](type:action action:action_id)
+    pattern = r'\[([^\]]+)\]\(type:action\s+action:([^\)]+)\)'
+    matches = re.findall(pattern, answer_text)
+    
+    for text, action_id in matches:
+        buttons.append({
+            'text': text.strip(),
+            'action_id': action_id.strip()
+        })
+    
+    return buttons
+
+
+def _format_slot_condition(slots: List[Dict]) -> str:
+    """
+    Форматирует условие слотов для отображения
+    """
+    if not slots:
+        return ""
+    
+    conditions = []
+    for slot in slots:
+        slot_id = slot.get('slot_id', '')
+        values = slot.get('values', [])
+        if slot_id and values:
+            val_str = ','.join(str(v) for v in values[:2])
+            if len(values) > 2:
+                val_str += '...'
+            conditions.append(f"{slot_id}={val_str}")
+    
+    return ' AND '.join(conditions) if conditions else ""
+
 
 def _extract_transitions(intent: Dict) -> List[Transition]:
     """
@@ -61,16 +117,41 @@ def _extract_transitions(intent: Dict) -> List[Transition]:
         if not isinstance(answer, dict):
             continue
         
+        answer_text = answer.get('answer', '')
+        slots = _safe_list(answer.get('slots', []))
+        slot_condition = _format_slot_condition(slots)
+        
         # 3a. Answer-level redirect
         answer_redirect = answer.get('redirect_to')
         if answer_redirect and isinstance(answer_redirect, str):
             transitions.append(Transition(
                 source_id=intent_id,
                 target_id=answer_redirect,
-                transition_type='answer_redirect'
+                transition_type='answer_redirect',
+                condition=slot_condition if slot_condition else None
             ))
         
-        # 3b. Переходы из кнопок
+        # 3b. REDIRECT_TO_INTENT из текста ответа (НОВОЕ!)
+        text_redirects = _extract_redirect_from_text(answer_text)
+        for target in text_redirects:
+            transitions.append(Transition(
+                source_id=intent_id,
+                target_id=target,
+                transition_type='text_redirect',
+                condition=slot_condition if slot_condition else None
+            ))
+        
+        # 3c. Кнопки из markdown в тексте ответа (НОВОЕ!)
+        markdown_buttons = _extract_buttons_from_markdown(answer_text)
+        for btn in markdown_buttons:
+            transitions.append(Transition(
+                source_id=intent_id,
+                target_id=btn['action_id'],
+                transition_type='button_action',
+                condition=f"button: {btn['text']}"
+            ))
+        
+        # 3d. Переходы из кнопок (структурированные данные)
         buttons = _safe_list(answer.get('buttons', []))
         for button in buttons:
             if not isinstance(button, dict):
@@ -97,6 +178,23 @@ def _extract_transitions(intent: Dict) -> List[Transition]:
                 url = action.get('url', '')
                 # Можно добавить парсинг intent_id из URL
                 pass
+        
+        # 3e. Actions из ответа (НОВОЕ!)
+        actions = _safe_list(answer.get('actions', []))
+        for action in actions:
+            if not isinstance(action, dict):
+                continue
+            
+            action_id = action.get('action_id', '')
+            action_text = action.get('action_text', '')
+            if action_id:
+                # Actions - это потенциальные переходы к другим интентам
+                transitions.append(Transition(
+                    source_id=intent_id,
+                    target_id=action_id,
+                    transition_type='action_redirect',
+                    condition=f"action: {action_text}" if action_text else None
+                ))
     
     # 4. Условные переходы из slot_fillers
     slot_fillers = _safe_list(intent.get('slot_fillers', []))
@@ -138,6 +236,110 @@ def _extract_transitions(intent: Dict) -> List[Transition]:
         ))
     
     return transitions
+
+
+def extract_detailed_flow(intent: Dict) -> Dict[str, Any]:
+    """
+    Извлекает полную логику обработки интента включая:
+    - Условия входа (regex)
+    - Ветвления по слотам
+    - Все возможные переходы
+    """
+    intent_id = intent.get('intent_id', 'unknown')
+    title = intent.get('title', '')
+    
+    flow = {
+        'intent_id': intent_id,
+        'title': title,
+        'record_type': intent.get('record_type', ''),
+        'entry_conditions': [],
+        'branches': [],
+        'transitions': []
+    }
+    
+    # 1. Условия входа (regex из inputs)
+    inputs = _safe_list(intent.get('inputs', []))
+    for inp in inputs:
+        if not isinstance(inp, dict):
+            continue
+        questions = _safe_list(inp.get('questions', []))
+        for q in questions:
+            if isinstance(q, dict):
+                sentence = q.get('sentence', '')
+                if sentence:
+                    flow['entry_conditions'].append({
+                        'type': 'regex' if sentence.startswith('/') else 'text',
+                        'pattern': sentence
+                    })
+    
+    # 2. Ветвления по ответам
+    answers = _safe_list(intent.get('answers', []))
+    for idx, answer in enumerate(answers):
+        if not isinstance(answer, dict):
+            continue
+        
+        answer_text = answer.get('answer', '')
+        slots = _safe_list(answer.get('slots', []))
+        
+        branch = {
+            'answer_id': answer.get('id', f'answer_{idx}'),
+            'slot_conditions': [],
+            'actions': [],
+            'redirects': [],
+            'buttons': []
+        }
+        
+        # Условия слотов
+        for slot in slots:
+            if isinstance(slot, dict):
+                branch['slot_conditions'].append({
+                    'slot_id': slot.get('slot_id', ''),
+                    'values': slot.get('values', [])
+                })
+        
+        # Команды в тексте ответа
+        if answer_text:
+            # SET_SLOT_VALUE
+            set_slots = re.findall(r'SET_SLOT_VALUE_(\S+)\s+(\S+)', answer_text)
+            for slot_name, value in set_slots:
+                branch['actions'].append({
+                    'type': 'set_slot',
+                    'slot': slot_name,
+                    'value': value
+                })
+            
+            # DELETE_SLOT_VALUE
+            del_slots = re.findall(r'DELETE_SLOT_VALUE_(\S+)', answer_text)
+            for slot_name in del_slots:
+                branch['actions'].append({
+                    'type': 'delete_slot',
+                    'slot': slot_name
+                })
+            
+            # REDIRECT_TO_INTENT
+            redirects = _extract_redirect_from_text(answer_text)
+            for r in redirects:
+                branch['redirects'].append(r)
+            
+            # Кнопки из markdown
+            buttons = _extract_buttons_from_markdown(answer_text)
+            branch['buttons'] = buttons
+        
+        # Actions из ответа
+        actions_list = _safe_list(answer.get('actions', []))
+        for act in actions_list:
+            if isinstance(act, dict):
+                branch['buttons'].append({
+                    'text': act.get('action_text', ''),
+                    'action_id': act.get('action_id', '')
+                })
+        
+        flow['branches'].append(branch)
+    
+    # 3. Все переходы
+    flow['transitions'] = _extract_transitions(intent)
+    
+    return flow
 
 def first_pass(intents: List[Dict]) -> Dict[str, Any]:
     """

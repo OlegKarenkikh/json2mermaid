@@ -1,0 +1,67 @@
+flowchart TD
+    %% Intent Flow: 8aeb7ad2-4d1a-4727-a923-f136def8a21a
+    %% Title: Главный интент. Внести изменения в полис. Уточнение вида ...
+
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a(["🎯 Главный интент. Внести изменения в полис. Уточнение вида ..."])
+    style n_8aeb7ad2_4d1a_4727_a923_f136def8a21a fill:#4CAF50,stroke:#2E7D32,color:#fff
+
+    %% Entry Conditions
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a_entry{{"📝 Условие входа"}}
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a_entry_0["`RegExp: /?:^s.,:внестивнесениеsизмеинен`"]
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a_entry_0 --> n_8aeb7ad2_4d1a_4727_a923_f136def8a21a_entry
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a_entry --> n_8aeb7ad2_4d1a_4727_a923_f136def8a21a
+
+    %% Default branch with buttons
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a_btns_0[/"🔘 Выбор действия"/]
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a -->|"без условий"| n_8aeb7ad2_4d1a_4727_a923_f136def8a21a_btns_0
+    style n_8aeb7ad2_4d1a_4727_a923_f136def8a21a_btns_0 fill:#E3F2FD,stroke:#1976D2
+    ccConsultationAutoOsagoChange(("ccConsultationAutoOsag..."))
+    style ccConsultationAutoOsagoChange fill:#FFC107,stroke:#F57C00
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a_btns_0 -->|"ОСАГО"| ccConsultationAutoOsagoChange
+    ccOTMKASKOAQF(("ccOTMKASKOAQF"))
+    style ccOTMKASKOAQF fill:#FFC107,stroke:#F57C00
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a_btns_0 -->|"Каско"| ccOTMKASKOAQF
+    ccMortgageChanges(("ccMortgageChanges"))
+    style ccMortgageChanges fill:#FFC107,stroke:#F57C00
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a_btns_0 -->|"Ипотечное страхов..."| ccMortgageChanges
+    ccIFLChangePolis(("ccIFLChangePolis"))
+    style ccIFLChangePolis fill:#FFC107,stroke:#F57C00
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a_btns_0 -->|"Страхование имуще..."| ccIFLChangePolis
+    cc_travel_change_1(("cc_travel_change_1"))
+    style cc_travel_change_1 fill:#FFC107,stroke:#F57C00
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a_btns_0 -->|"Путешествия"| cc_travel_change_1
+    kc_Gen_Int_NeedChange_DMS(("kc_Gen_Int_NeedChange_DMS"))
+    style kc_Gen_Int_NeedChange_DMS fill:#FFC107,stroke:#F57C00
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a_btns_0 -->|"ДМС"| kc_Gen_Int_NeedChange_DMS
+    ccNeedChangeOther(("ccNeedChangeOther"))
+    style ccNeedChangeOther fill:#FFC107,stroke:#F57C00
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a_btns_0 -->|"Другое"| ccNeedChangeOther
+
+    %% Conditional branches
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a_check{{"⚙️ Проверка слотов"}}
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a --> n_8aeb7ad2_4d1a_4727_a923_f136def8a21a_check
+    style n_8aeb7ad2_4d1a_4727_a923_f136def8a21a_check fill:#FFF3E0,stroke:#E65100
+
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a_check -->|"ent_identification=Идентифициро ile_client..."| ccConsultationAutoOsagoChange
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a_act_0[["SET RegExp_MainClass, SET c..."]]
+    style n_8aeb7ad2_4d1a_4727_a923_f136def8a21a_act_0 fill:#E8F5E9,stroke:#43A047
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a_check -->|"ent_identification=Идентифициро ile_client..."| ccOTMKASKOAQF
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a_act_1[["SET RegExp_MainClass, SET c..."]]
+    style n_8aeb7ad2_4d1a_4727_a923_f136def8a21a_act_1 fill:#E8F5E9,stroke:#43A047
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a_check -->|"ner_polis=ОСАГО"| ccConsultationAutoOsagoChange
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a_act_2[["SET RegExp_MainClass, SET c..."]]
+    style n_8aeb7ad2_4d1a_4727_a923_f136def8a21a_act_2 fill:#E8F5E9,stroke:#43A047
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a_check -->|"ner_polis=КАСКО"| ccOTMKASKOAQF
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a_act_3[["SET RegExp_MainClass, SET c..."]]
+    style n_8aeb7ad2_4d1a_4727_a923_f136def8a21a_act_3 fill:#E8F5E9,stroke:#43A047
+    ccPolicyChangeAndProlong(("ccPolicyChangeAndProlong"))
+    style ccPolicyChangeAndProlong fill:#FFC107,stroke:#F57C00
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a_check -->|"_intention_prolong=Продлить"| ccPolicyChangeAndProlong
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a_act_4[["SET RegExp_MainClass, SET c..."]]
+    style n_8aeb7ad2_4d1a_4727_a923_f136def8a21a_act_4 fill:#E8F5E9,stroke:#43A047
+
+
+    %% Statistics:
+    %% Entry conditions: 1
+    %% Conditional branches: 5
+    %% Default branches: 2

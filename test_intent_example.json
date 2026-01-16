@@ -1,0 +1,193 @@
+[
+    {
+        "intent_id": "8aeb7ad2-4d1a-4727-a923-f136def8a21a",
+        "record_type": "cc_regexp_main",
+        "title": "Главный интент. Внести изменения в полис. Уточнение вида страхования. RegExp",
+        "symbol_code": "kc_Gen_Int_NeedChange_RegExp",
+        "customer_id": "ingos-prod",
+        "inputs": [
+            {
+                "questions": [
+                    {
+                        "sentence": "/(?:^|\\s|[.,;:])((((внести|внесение)\\s(изм[еи]нен(ие|ия|ий)))|((((ис|по)править|(из|с)менить|поменять|(от)?редактировать|скорректировать)(\\sданные)?)|ошибка|опечатка))\\s(в?\\s?((страхов(ой|ом|ого)\\s)?полис(а|е|ах|ы)?|страховк[иауе]|договор[еыа]?)))(?:^|\\s|$|[,.?;:])/I"
+                    }
+                ]
+            }
+        ],
+        "answers_type": "Text",
+        "answers": [
+            {
+                "id": "cf41f465-091d-4633-9a99-69954ad038d8",
+                "slots": [],
+                "answer": "По какому виду страхования вы хотите внести изменения в полис?\n\n```buttons\n::\n[ОСАГО](type:action action:ccConsultationAutoOsagoChange)\n[Каско](type:action action:ccOTMKASKOAQF)\n::\n[Ипотечное страхование](type:action action:ccMortgageChanges)\n::\n[Страхование имущества](type:action action:ccIFLChangePolis)\n::\n[Путешествия](type:action action:cc_travel_change_1)\n::\n[ДМС](type:action action:kc_Gen_Int_NeedChange_DMS)\n[Другое](type:action action:ccNeedChangeOther)\n```",
+                "answer_type": "Markdown",
+                "attachments": [],
+                "actions": [
+                    {
+                        "action_id": "ccConsultationAutoOsagoChange",
+                        "action_text": "ОСАГО",
+                        "synonyms": []
+                    },
+                    {
+                        "action_id": "ccOTMKASKOAQF",
+                        "action_text": "Каско",
+                        "synonyms": []
+                    },
+                    {
+                        "action_id": "ccMortgageChanges",
+                        "action_text": "Ипотечное страхование",
+                        "synonyms": []
+                    },
+                    {
+                        "action_id": "ccIFLChangePolis",
+                        "action_text": "Страхование имущества",
+                        "synonyms": []
+                    },
+                    {
+                        "action_id": "cc_travel_change_1",
+                        "action_text": "Путешествия",
+                        "synonyms": []
+                    },
+                    {
+                        "action_id": "kc_Gen_Int_NeedChange_DMS",
+                        "action_text": "ДМС",
+                        "synonyms": []
+                    },
+                    {
+                        "action_id": "ccNeedChangeOther",
+                        "action_text": "Другое",
+                        "synonyms": []
+                    }
+                ],
+                "remarks": [],
+                "related_articles": [],
+                "external_links": []
+            },
+            {
+                "id": "96cf5eec-7393-4a0b-95e5-a3dbe2c531c0",
+                "slots": [],
+                "answer": "/set_dialog_expiration 7200000\nSET_SLOT_VALUE_RegExp_MainClass +\nSET_SLOT_VALUE_cc_bot_cons_lvl1 Внесение изменений в полис\nDELETE_SLOT_VALUE_cc_bot_cons_lvl2\nDELETE_SLOT_VALUE_cc_bot_cons_lvl3",
+                "answer_type": "Text",
+                "attachments": [],
+                "actions": [],
+                "remarks": [],
+                "related_articles": [],
+                "external_links": []
+            },
+            {
+                "id": "58cb97b3-981d-4466-aad6-ce7925d19e01",
+                "slots": [
+                    {
+                        "slot_id": "client_identification",
+                        "values": [
+                            "Идентифицирован"
+                        ]
+                    },
+                    {
+                        "slot_id": "profile_client_product",
+                        "values": [
+                            "__FILLED__"
+                        ]
+                    },
+                    {
+                        "slot_id": "MainPolis",
+                        "values": [
+                            "ОСАГО"
+                        ]
+                    }
+                ],
+                "answer": "/set_dialog_expiration 7200000\nSET_SLOT_VALUE_RegExp_MainClass +\nSET_SLOT_VALUE_cc_bot_cons_lvl1 Внесение изменений в полис\nDELETE_SLOT_VALUE_cc_bot_cons_lvl2\nDELETE_SLOT_VALUE_cc_bot_cons_lvl3\nREDIRECT_TO_INTENT ccConsultationAutoOsagoChange",
+                "answer_type": "Text",
+                "attachments": [],
+                "actions": [],
+                "remarks": [],
+                "related_articles": [],
+                "external_links": []
+            },
+            {
+                "id": "ac4d5d42-5d0d-402f-9978-a45ad34a0a0a",
+                "slots": [
+                    {
+                        "slot_id": "client_identification",
+                        "values": [
+                            "Идентифицирован"
+                        ]
+                    },
+                    {
+                        "slot_id": "profile_client_product",
+                        "values": [
+                            "__FILLED__"
+                        ]
+                    },
+                    {
+                        "slot_id": "MainPolis",
+                        "values": [
+                            "КАСКО"
+                        ]
+                    }
+                ],
+                "answer": "/set_dialog_expiration 7200000\nSET_SLOT_VALUE_RegExp_MainClass +\nSET_SLOT_VALUE_cc_bot_cons_lvl1 Внесение изменений в полис\nDELETE_SLOT_VALUE_cc_bot_cons_lvl2\nDELETE_SLOT_VALUE_cc_bot_cons_lvl3\nREDIRECT_TO_INTENT ccOTMKASKOAQF",
+                "answer_type": "Text",
+                "attachments": [],
+                "actions": [],
+                "remarks": [],
+                "related_articles": [],
+                "external_links": []
+            },
+            {
+                "id": "7f6e43a0-380f-476b-ac0b-5c6d2c4be6af",
+                "slots": [
+                    {
+                        "slot_id": "ner_polis",
+                        "values": [
+                            "ОСАГО"
+                        ]
+                    }
+                ],
+                "answer": "/set_dialog_expiration 7200000\nSET_SLOT_VALUE_RegExp_MainClass +\nSET_SLOT_VALUE_cc_bot_cons_lvl1 Внесение изменений в полис\nDELETE_SLOT_VALUE_cc_bot_cons_lvl2\nDELETE_SLOT_VALUE_cc_bot_cons_lvl3\nDELETE_SLOT_VALUE_ner_polis\nREDIRECT_TO_INTENT ccConsultationAutoOsagoChange",
+                "answer_type": "Text",
+                "attachments": [],
+                "actions": [],
+                "remarks": [],
+                "related_articles": [],
+                "external_links": []
+            },
+            {
+                "id": "f154e22d-4215-4664-9aed-d54420a8e802",
+                "slots": [
+                    {
+                        "slot_id": "ner_polis",
+                        "values": [
+                            "КАСКО"
+                        ]
+                    }
+                ],
+                "answer": "/set_dialog_expiration 7200000\nSET_SLOT_VALUE_RegExp_MainClass +\nSET_SLOT_VALUE_cc_bot_cons_lvl1 Внесение изменений в полис\nDELETE_SLOT_VALUE_cc_bot_cons_lvl2\nDELETE_SLOT_VALUE_cc_bot_cons_lvl3\nDELETE_SLOT_VALUE_ner_polis\nREDIRECT_TO_INTENT ccOTMKASKOAQF",
+                "answer_type": "Text",
+                "attachments": [],
+                "actions": [],
+                "remarks": [],
+                "related_articles": [],
+                "external_links": []
+            },
+            {
+                "id": "fc974238-c679-48d0-a0f3-410083b47f8f",
+                "slots": [
+                    {
+                        "slot_id": "ner_intention_prolong",
+                        "values": [
+                            "Продлить"
+                        ]
+                    }
+                ],
+                "answer": "/set_dialog_expiration 7200000\nSET_SLOT_VALUE_RegExp_MainClass +\nSET_SLOT_VALUE_cc_bot_cons_lvl1 Внесение изменений в полис\nDELETE_SLOT_VALUE_cc_bot_cons_lvl2\nDELETE_SLOT_VALUE_cc_bot_cons_lvl3\nDELETE_SLOT_VALUE_ner_intention_prolong\nREDIRECT_TO_INTENT ccPolicyChangeAndProlong",
+                "answer_type": "Text",
+                "attachments": [],
+                "actions": [],
+                "remarks": [],
+                "related_articles": [],
+                "external_links": []
+            }
+        ]
+    }
+]
