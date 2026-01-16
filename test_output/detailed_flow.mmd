@@ -1,0 +1,55 @@
+flowchart TD
+    %% Detailed Dialog Flow Diagram
+
+    %% Intent: 8aeb7ad2-4d1a-4727-a923-f136def8a21a
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a(["Главный интент. Внести изменения в полис. Уточн..."])
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a_regex{{"/?:^s.,:внестивнесение..."}}
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a_regex --> n_8aeb7ad2_4d1a_4727_a923_f136def8a21a
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a_decision{{"Проверка условий"}}
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a --> n_8aeb7ad2_4d1a_4727_a923_f136def8a21a_decision
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a_decision -->|lient_identification=Иденти...| ccConsultationAutoOsagoChange
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a_decision -->|lient_identification=Иденти...| ccOTMKASKOAQF
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a_decision -->|ner_polis=ОСАГО| ccConsultationAutoOsagoChange
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a_decision -->|ner_polis=КАСКО| ccOTMKASKOAQF
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a_decision -->|er_intention_prolong=Продлить| ccPolicyChangeAndProlong
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a_buttons[/"ОСАГО / Каско / Ипотечное ст... / Страхование ... / ..."/]
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a --> n_8aeb7ad2_4d1a_4727_a923_f136def8a21a_buttons
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a_buttons -->|ОСАГО| ccConsultationAutoOsagoChange
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a_buttons -->|Каско| ccOTMKASKOAQF
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a_buttons -->|Ипотечное ст...| ccMortgageChanges
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a_buttons -->|Страхование ...| ccIFLChangePolis
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a_buttons -->|Путешествия| cc_travel_change_1
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a_buttons -->|ДМС| kc_Gen_Int_NeedChange_DMS
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a_buttons -->|Другое| ccNeedChangeOther
+
+    %% External target intents (not in current file)
+    kc_Gen_Int_NeedChange_DMS(("kc_Gen_Int_NeedChange_DMS"))
+    cc_travel_change_1(("cc_travel_change_1"))
+    ccNeedChangeOther(("ccNeedChangeOther"))
+    ccIFLChangePolis(("ccIFLChangePolis"))
+    ccMortgageChanges(("ccMortgageChanges"))
+    ccOTMKASKOAQF(("ccOTMKASKOAQF"))
+    ccConsultationAutoOsagoChange(("ccConsultationAutoOsagoChange"))
+    ccPolicyChangeAndProlong(("ccPolicyChangeAndProlong"))
+
+    %% Styles
+    style n_8aeb7ad2_4d1a_4727_a923_f136def8a21a fill:#4CAF50,stroke:#2E7D32,color:#fff
+    style kc_Gen_Int_NeedChange_DMS fill:#FFC107,stroke:#F57C00,color:#000
+    style cc_travel_change_1 fill:#FFC107,stroke:#F57C00,color:#000
+    style ccNeedChangeOther fill:#FFC107,stroke:#F57C00,color:#000
+    style ccIFLChangePolis fill:#FFC107,stroke:#F57C00,color:#000
+    style ccMortgageChanges fill:#FFC107,stroke:#F57C00,color:#000
+    style ccOTMKASKOAQF fill:#FFC107,stroke:#F57C00,color:#000
+    style ccConsultationAutoOsagoChange fill:#FFC107,stroke:#F57C00,color:#000
+    style ccPolicyChangeAndProlong fill:#FFC107,stroke:#F57C00,color:#000
+
+    %% Legend:
+    %% Green rounded = Main intent (entry point)
+    %% Blue rectangle = Dialog intent
+    %% Yellow circle = External intent (target)
+    %% Diamond = Decision/condition node
+    %% Parallelogram = Buttons/actions
+
+    %% Total intents: 1
+    %% External targets: 8
+    %% Total edges: 15

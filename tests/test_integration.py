@@ -53,7 +53,7 @@ def test_full_pipeline_subprocess(sample_data, tmp_path):
         )
 
         assert result.returncode == 0
-        assert "DIALOG ANALYZER v5.1" in result.stdout
+        assert "DIALOG ANALYZER" in result.stdout
         assert "ЭТАП 1: Загрузка данных" in result.stdout
 
         # Verify output

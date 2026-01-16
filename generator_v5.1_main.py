@@ -59,7 +59,7 @@ except ImportError:
     print("⚠️  Freshness analysis module not available")
 
 try:
-    from utils.diagram_exporter import export_mermaid_graph
+    from utils.diagram_exporter import export_mermaid_graph, export_detailed_flow_diagram
     DIAGRAM_EXPORT_AVAILABLE = True
 except ImportError:
     DIAGRAM_EXPORT_AVAILABLE = False
@@ -285,6 +285,7 @@ def main():
         print("🖌️  ЭТАП 6: Генерация диаграмм")
         print("=" * 80)
         
+        # Стандартная диаграмма графа
         diagram_path = os.path.join(OUTPUT_DIR, "graph.mmd")
         export_mermaid_graph(
             intents=intents,
@@ -293,7 +294,18 @@ def main():
             output_path=diagram_path,
             include_legend=INCLUDE_LEGEND,
         )
-        print(f"\n🖌️  Диаграмма Mermaid сохранена: {diagram_path}")
+        print(f"\n🖌️  Диаграмма графа сохранена: {diagram_path}")
+        
+        # Детальная диаграмма с полной логикой обработки
+        detailed_diagram_path = os.path.join(OUTPUT_DIR, "detailed_flow.mmd")
+        export_detailed_flow_diagram(
+            intents=intents,
+            output_path=detailed_diagram_path,
+            show_slot_conditions=True,
+            show_buttons=True,
+            show_regex=True,
+        )
+        print(f"🖌️  Детальная диаграмма логики сохранена: {detailed_diagram_path}")
         print(f"👁️  Просмотр: https://mermaid.live/")
     
     # 7. Статистика
