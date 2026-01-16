@@ -1,0 +1,51 @@
+{
+  "validation_timestamp": "2026-01-16T07:53:04.715304",
+  "version": "5.1",
+  "summary": {
+    "total_intents": 12,
+    "error_count": 0,
+    "warning_count": 0,
+    "is_valid": true,
+    "has_warnings": false
+  },
+  "details": {
+    "intent_ids": {
+      "total": 12,
+      "unique": 12,
+      "duplicates": {},
+      "duplicate_count": 0,
+      "is_valid": true
+    },
+    "titles": {
+      "total_titles": 12,
+      "duplicate_titles": {},
+      "duplicate_count": 0,
+      "is_valid": true
+    },
+    "nan_fields": {
+      "total_intents": 12,
+      "nan_by_field": {},
+      "nan_percentage": {},
+      "is_valid": true
+    },
+    "empty_content": {
+      "empty_answers": [],
+      "empty_answers_count": 0,
+      "empty_inputs": [],
+      "empty_inputs_count": 0,
+      "is_valid": true
+    },
+    "redirects": {
+      "total_redirects": 0,
+      "broken_redirects": [],
+      "broken_count": 0,
+      "redirect_map": {},
+      "is_valid": true
+    },
+    "circular_redirects": {
+      "cycles": [],
+      "cycle_count": 0,
+      "is_valid": true
+    }
+  }
+}

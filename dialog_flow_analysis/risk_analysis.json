@@ -1,0 +1,222 @@
+{
+  "report_timestamp": "2026-01-16T07:53:04.715987",
+  "report_type": "risk_analysis",
+  "version": "5.1",
+  "summary": {
+    "total_intents": 12,
+    "risk_score": 100,
+    "severity_distribution": {
+      "info": 7,
+      "medium": 5
+    },
+    "risk_type_distribution": {
+      "dead_end": 5
+    },
+    "critical_intents": [],
+    "high_risk_intents": []
+  },
+  "intents": {
+    "osago_buy_car_data": {
+      "intent_id": "osago_buy_car_data",
+      "severity": "medium",
+      "color": "#FFCC44",
+      "risk_count": 1,
+      "risks": [
+        {
+          "type": "dead_end",
+          "description": "Intent has no outgoing transitions - dialog ends here"
+        }
+      ]
+    },
+    "kasko_calculate": {
+      "intent_id": "kasko_calculate",
+      "severity": "medium",
+      "color": "#FFCC44",
+      "risk_count": 1,
+      "risks": [
+        {
+          "type": "dead_end",
+          "description": "Intent has no outgoing transitions - dialog ends here"
+        }
+      ]
+    },
+    "dms_programs": {
+      "intent_id": "dms_programs",
+      "severity": "medium",
+      "color": "#FFCC44",
+      "risk_count": 1,
+      "risks": [
+        {
+          "type": "dead_end",
+          "description": "Intent has no outgoing transitions - dialog ends here"
+        }
+      ]
+    },
+    "personal_cabinet": {
+      "intent_id": "personal_cabinet",
+      "severity": "medium",
+      "color": "#FFCC44",
+      "risk_count": 1,
+      "risks": [
+        {
+          "type": "dead_end",
+          "description": "Intent has no outgoing transitions - dialog ends here"
+        }
+      ]
+    },
+    "mobile_app": {
+      "intent_id": "mobile_app",
+      "severity": "medium",
+      "color": "#FFCC44",
+      "risk_count": 1,
+      "risks": [
+        {
+          "type": "dead_end",
+          "description": "Intent has no outgoing transitions - dialog ends here"
+        }
+      ]
+    }
+  },
+  "risk_legend": {
+    "critical": {
+      "color": "#FF4444",
+      "level": 0
+    },
+    "high": {
+      "color": "#FF8844",
+      "level": 1
+    },
+    "medium": {
+      "color": "#FFCC44",
+      "level": 2
+    },
+    "low": {
+      "color": "#88CCFF",
+      "level": 3
+    },
+    "info": {
+      "color": "#CCCCCC",
+      "level": 4
+    }
+  },
+  "quality_metrics": {
+    "regex_complexity": {
+      "total_patterns": 12,
+      "complexity_distribution": {
+        "moderate": 11,
+        "simple": 1
+      },
+      "complex_count": 0,
+      "complex_percentage": 0.0,
+      "top_complex_patterns": []
+    },
+    "entry_points": {
+      "total_entry_points": 12,
+      "type_distribution": {
+        "cc_regexp_main": 6,
+        "cc_match": 5,
+        "cc_viber_telegram": 1
+      },
+      "unique_types": 3,
+      "diversity_score": 75,
+      "entry_points": [
+        {
+          "intent_id": "osago_buy_start",
+          "type": "cc_regexp_main",
+          "record_type": "cc_regexp_main",
+          "title": "Купить ОСАГО - начало"
+        },
+        {
+          "intent_id": "osago_buy_car_data",
+          "type": "cc_match",
+          "record_type": "cc_match",
+          "title": "ОСАГО - данные автомобиля"
+        },
+        {
+          "intent_id": "osago_renew",
+          "type": "cc_regexp_main",
+          "record_type": "cc_regexp_main",
+          "title": "Продлить ОСАГО"
+        },
+        {
+          "intent_id": "kasko_info",
+          "type": "cc_regexp_main",
+          "record_type": "cc_regexp_main",
+          "title": "Информация о КАСКО"
+        },
+        {
+          "intent_id": "kasko_calculate",
+          "type": "cc_match",
+          "record_type": "cc_match",
+          "title": "Расчет стоимости КАСКО"
+        },
+        {
+          "intent_id": "kasko_buy_start",
+          "type": "cc_match",
+          "record_type": "cc_match",
+          "title": "Купить КАСКО - начало"
+        },
+        {
+          "intent_id": "dms_info",
+          "type": "cc_regexp_main",
+          "record_type": "cc_regexp_main",
+          "title": "Информация о ДМС"
+        },
+        {
+          "intent_id": "dms_programs",
+          "type": "cc_match",
+          "record_type": "cc_match",
+          "title": "Программы ДМС"
+        },
+        {
+          "intent_id": "personal_cabinet",
+          "type": "cc_regexp_main",
+          "record_type": "cc_regexp_main",
+          "title": "Личный кабинет"
+        },
+        {
+          "intent_id": "mobile_app",
+          "type": "cc_regexp_main",
+          "record_type": "cc_regexp_main",
+          "title": "Мобильное приложение"
+        },
+        {
+          "intent_id": "telegram_support",
+          "type": "cc_viber_telegram",
+          "record_type": "cc_viber_telegram",
+          "title": "Поддержка в Telegram"
+        },
+        {
+          "intent_id": "fallback_intent",
+          "type": "cc_match",
+          "record_type": "cc_match",
+          "title": "Не понял запрос"
+        }
+      ],
+      "has_multiple_channels": true
+    },
+    "data_freshness": {
+      "has_version_data": true,
+      "oldest_date": "2024-11-19T05:20:00",
+      "newest_date": "2024-11-19T05:21:50",
+      "date_range_days": 0,
+      "total_intents": 12,
+      "updated_last_day": 0,
+      "updated_last_week": 0,
+      "updated_last_month": 0,
+      "last_month_percentage": 0.0,
+      "activity_score": 0,
+      "freshness": "very_stale",
+      "update_distribution": {
+        "updates_by_day": {
+          "2024-11-19": 12
+        },
+        "peak_day": [
+          "2024-11-19",
+          12
+        ],
+        "unique_days": 1
+      }
+    }
+  }
+}
