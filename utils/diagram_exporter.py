@@ -2,14 +2,39 @@
 """Diagram export utilities (Mermaid) with risk-based styling."""
 
 from typing import Dict, Iterable, Optional, Tuple
+import re
 
 from .risk_analyzer import RiskSeverity, IntentRisk
 from .visual_config import get_node_style, generate_legend_mermaid
 
 
 def _sanitize_node_id(intent_id: str) -> str:
-    """Sanitize node id for Mermaid."""
+    """Очистка node id для Mermaid."""
     return intent_id.replace("-", "_").replace(".", "_")
+
+
+def _sanitize_label(text: str) -> str:
+    """
+    Очистка текста для Mermaid label.
+    Экранирует спецсимволы и кавычки.
+    """
+    if not text:
+        return ""
+    
+    # Замена двойных кавычек на одинарные
+    text = text.replace('"', "'")
+    
+    # Удаление опасных символов для Mermaid
+    # Сохраняем только буквы, цифры, пробелы, пунктуацию
+    # Удаляем: [ ] { } ( ) < > \ | 
+    dangerous_chars = r'[\[\]{}()<>\\|]'
+    text = re.sub(dangerous_chars, '', text)
+    
+    # Ограничение длины (чтобы диаграмма была читаемой)
+    if len(text) > 80:
+        text = text[:77] + "..."
+    
+    return text.strip()
 
 
 def export_mermaid_graph(
@@ -19,7 +44,7 @@ def export_mermaid_graph(
     output_path: str,
     include_legend: bool = True,
 ) -> None:
-    """Export dialog graph as Mermaid diagram with risk styles."""
+    """Экспорт диалогового графа в Mermaid с риск-стилями."""
     lines = ["flowchart TD"]
 
     intent_list = list(intents)
@@ -30,7 +55,17 @@ def export_mermaid_graph(
         intent_id = intent.get("intent_id", "unknown")
         node_id = _sanitize_node_id(intent_id)
         title = str(intent.get("title", "")).strip()
-        label = f"{intent_id}\\n{title}" if title else intent_id
+        
+        # Очистка текста
+        clean_id = _sanitize_label(intent_id)
+        clean_title = _sanitize_label(title)
+        
+        # Формирование label
+        if clean_title:
+            label = f"{clean_id}<br/>{clean_title}"
+        else:
+            label = clean_id
+        
         lines.append(f'  {node_id}["{label}"]')
 
     # Edges
