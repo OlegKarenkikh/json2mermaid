@@ -285,6 +285,7 @@ def render_graphviz(
     dot_path: str,
     output_format: str = "svg",
     layout_engine: str = "dot",
+    timeout_seconds: int = 60,
 ) -> Optional[str]:
     """
     Рендеринг DOT файла в SVG/PNG через Graphviz.
@@ -299,6 +300,7 @@ def render_graphviz(
             - sfdp: масштабируемый force-directed (для больших графов!)
             - circo: круговая раскладка
             - twopi: радиальная раскладка
+        timeout_seconds: Таймаут в секундах (по умолчанию 60)
     
     Returns:
         Путь к созданному файлу или None при ошибке
@@ -310,35 +312,60 @@ def render_graphviz(
         result = subprocess.run(
             [layout_engine, '-V'],
             capture_output=True,
-            text=True
+            text=True,
+            timeout=5
         )
+        
+        print(f"   Рендеринг {output_format.upper()} через {layout_engine} (таймаут {timeout_seconds}с)...")
         
         # Рендерим
         cmd = [layout_engine, f'-T{output_format}', dot_path, '-o', output_path]
         
         # Для больших графов добавляем оптимизации
         if layout_engine == 'sfdp':
-            cmd.extend(['-Goverlap=prism', '-Gsplines=true'])
+            # sfdp оптимизации для больших графов
+            cmd.extend([
+                '-Goverlap=prism',      # Алгоритм удаления перекрытий
+                '-Gsplines=false',       # Отключаем сплайны (быстрее)
+                '-Gsep=+5',              # Минимальное расстояние
+                '-Gnodesep=0.1',         # Расстояние между узлами
+            ])
         elif layout_engine == 'fdp':
-            cmd.extend(['-Goverlap=false', '-Gsplines=true'])
+            cmd.extend([
+                '-Goverlap=false',
+                '-Gsplines=false',       # Отключаем сплайны для скорости
+            ])
         
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+        result = subprocess.run(
+            cmd, 
+            capture_output=True, 
+            text=True, 
+            timeout=timeout_seconds
+        )
         
         if result.returncode == 0:
-            print(f"✅ Graphviz {output_format.upper()} создан: {output_path}")
+            print(f"   ✅ Graphviz {output_format.upper()} создан: {output_path}")
             return output_path
         else:
-            print(f"⚠️  Ошибка Graphviz: {result.stderr}")
+            print(f"   ⚠️  Ошибка Graphviz: {result.stderr[:200]}")
             return None
             
     except FileNotFoundError:
-        print(f"⚠️  Graphviz ({layout_engine}) не установлен. Установите: apt install graphviz")
+        print(f"   ⚠️  Graphviz ({layout_engine}) не установлен")
+        print(f"      Установите: apt install graphviz (Linux) / brew install graphviz (Mac)")
         return None
     except subprocess.TimeoutExpired:
-        print(f"⚠️  Таймаут при рендеринге (граф слишком большой для {layout_engine})")
+        print(f"   ⚠️  Таймаут {timeout_seconds}с при рендеринге")
+        print(f"      Граф слишком большой для автоматического рендеринга")
+        print(f"      Используйте Gephi для просмотра .gexf файла")
+        # Убиваем зависший процесс
+        try:
+            subprocess.run(['pkill', '-f', layout_engine], capture_output=True, timeout=5)
+        except:
+            pass
         return None
     except Exception as e:
-        print(f"⚠️  Ошибка рендеринга: {e}")
+        print(f"   ⚠️  Ошибка рендеринга: {e}")
         return None
 
 
@@ -850,9 +877,20 @@ def export_all_formats(
     output_dir: str,
     base_name: str = "dialog_flow",
     render_images: bool = True,
+    max_nodes_for_render: int = 300,
+    render_timeout: int = 60,
 ) -> Dict[str, str]:
     """
     Экспорт во все поддерживаемые форматы.
+    
+    Args:
+        intents: Список интентов
+        transitions: Список переходов
+        output_dir: Директория для сохранения
+        base_name: Базовое имя файлов
+        render_images: Рендерить SVG/PNG через Graphviz
+        max_nodes_for_render: Максимум узлов для автоматического рендеринга (default: 300)
+        render_timeout: Таймаут рендеринга в секундах (default: 60)
     
     Returns:
         Словарь {формат: путь_к_файлу}
@@ -862,48 +900,59 @@ def export_all_formats(
     # Конвертируем в списки один раз
     intent_list = list(intents)
     transition_list = list(transitions)
+    node_count = len(intent_list)
+    
+    # Подсчитываем внешние цели
+    all_intent_ids = {_safe_str(i.get('intent_id'), '') for i in intent_list}
+    external_count = len({t.target_id for t in transition_list if t.target_id not in all_intent_ids})
+    total_nodes = node_count + external_count
     
     results = {}
     
     print("\n" + "=" * 80)
     print("🖌️  Генерация диаграмм в нескольких форматах")
     print("=" * 80)
+    print(f"   Интентов: {node_count}, Внешних целей: {external_count}, Всего узлов: {total_nodes}")
+    print(f"   Рёбер: {len(transition_list)}")
     
-    # 1. Graphviz DOT
+    # 1. Graphviz DOT (всегда создаём - это быстро)
     dot_path = os.path.join(output_dir, f"{base_name}.dot")
     results['dot'] = export_graphviz_dot(intent_list, transition_list, dot_path)
     
-    # 2. Render SVG (если Graphviz установлен)
-    if render_images:
-        # Для больших графов используем sfdp
-        node_count = len(intent_list)
-        if node_count > 500:
+    # 2. Render SVG/PNG (только для небольших графов)
+    if render_images and total_nodes <= max_nodes_for_render:
+        print(f"\n📷 Автоматический рендеринг изображений ({total_nodes} узлов <= {max_nodes_for_render})...")
+        
+        # Выбор движка в зависимости от размера
+        if total_nodes > 200:
             engine = 'sfdp'  # Scalable force-directed
-            print(f"\n   Используем sfdp (масштабируемый) для {node_count} узлов...")
-        elif node_count > 100:
+        elif total_nodes > 50:
             engine = 'fdp'   # Force-directed
         else:
             engine = 'dot'   # Hierarchical
         
-        svg_path = render_graphviz(dot_path, 'svg', engine)
+        svg_path = render_graphviz(dot_path, 'svg', engine, render_timeout)
         if svg_path:
             results['svg'] = svg_path
         
-        # PNG только для небольших графов
-        if node_count <= 500:
-            png_path = render_graphviz(dot_path, 'png', engine)
+        # PNG только для маленьких графов (большие PNG огромные)
+        if total_nodes <= 100:
+            png_path = render_graphviz(dot_path, 'png', engine, render_timeout)
             if png_path:
                 results['png'] = png_path
+    elif render_images:
+        print(f"\n⏭️  Пропуск автоматического рендеринга ({total_nodes} узлов > {max_nodes_for_render})")
+        print(f"   Используйте Gephi или yEd для просмотра больших графов")
     
-    # 3. GraphML
+    # 3. GraphML (для yEd)
     graphml_path = os.path.join(output_dir, f"{base_name}.graphml")
     results['graphml'] = export_graphml(intent_list, transition_list, graphml_path)
     
-    # 4. GEXF (для Gephi)
+    # 4. GEXF (для Gephi - лучший для больших графов)
     gexf_path = os.path.join(output_dir, f"{base_name}.gexf")
     results['gexf'] = export_gexf(intent_list, transition_list, gexf_path)
     
-    # 5. JSON форматы
+    # 5. JSON форматы (для веб-визуализации)
     cytoscape_path = os.path.join(output_dir, f"{base_name}_cytoscape.json")
     results['cytoscape'] = export_json_graph(intent_list, transition_list, cytoscape_path, 'cytoscape')
     
@@ -919,12 +968,20 @@ def export_all_formats(
     print("=" * 80)
     for fmt, path in results.items():
         if path:
-            print(f"   {fmt.upper():12s}: {path}")
+            size_kb = os.path.getsize(path) / 1024
+            print(f"   {fmt.upper():12s}: {path} ({size_kb:.1f} KB)")
     
     print("\n💡 Рекомендации по просмотру:")
-    print("   • Маленькие графы (<100 узлов): SVG в браузере")
-    print("   • Средние графы (100-1000): yEd + GraphML")
-    print("   • Большие графы (1000+): Gephi + GEXF")
-    print("   • Интерактивный веб: Cytoscape.js / vis.js + JSON")
+    if total_nodes < 100:
+        print("   ✅ Граф небольшой - можно открыть SVG в браузере")
+    elif total_nodes < 1000:
+        print("   📊 Средний граф - рекомендуется yEd + GraphML")
+        print("      Скачать: https://www.yworks.com/products/yed/download")
+    else:
+        print("   🔥 Большой граф - используйте Gephi + GEXF")
+        print("      Скачать: https://gephi.org/users/download/")
+        print("      Gephi поддерживает графы с миллионами узлов!")
+    
+    print("\n   Веб-визуализация: используйте JSON файлы с Cytoscape.js / vis.js / D3.js")
     
     return results
