@@ -54,6 +54,57 @@ def test_analyze_intent_risks_high():
     risk_types = [r[0] for r in risks["1"].risks]
     assert RiskType.MISSING_RECORD_TYPE in risk_types
 
+
+def test_analyze_intent_risks_optional_none_is_ok():
+    """Тест: None для опциональных полей не должен быть риском"""
+    # Intent с None в опциональных полях (это допустимо)
+    intent = {
+        "intent_id": "test_optional",
+        "record_type": "main",  # Обязательное поле заполнено
+        "intent_settings": None,  # Опциональное - None допустим
+        "routing_params": None,   # Опциональное - None допустим
+        "topics": None            # Опциональное - None допустим
+    }
+    validation_results = {
+        "intent_ids": {"duplicates": {}},
+        "titles": {"duplicate_titles": {}},
+        "empty_content": {},
+        "redirects": {"broken_redirects": []},
+        "circular_redirects": {"cycles": []},
+        "graph_analysis": {}
+    }
+
+    risks = analyze_intent_risks([intent], validation_results)
+
+    # Не должно быть рисков NAN_VALUE для опциональных полей
+    risk_types = [r[0] for r in risks["test_optional"].risks]
+    assert RiskType.NAN_VALUE not in risk_types
+    assert RiskType.MISSING_RECORD_TYPE not in risk_types
+
+
+def test_analyze_intent_risks_explicit_nan():
+    """Тест: Явный NaN (строка 'NaN') в опциональных полях - это риск"""
+    intent = {
+        "intent_id": "test_nan",
+        "record_type": "main",
+        "intent_settings": "NaN",  # Явный NaN - это плохо
+        "routing_params": {},
+        "topics": []
+    }
+    validation_results = {
+        "intent_ids": {"duplicates": {}},
+        "titles": {"duplicate_titles": {}},
+        "empty_content": {},
+        "redirects": {"broken_redirects": []},
+        "circular_redirects": {"cycles": []},
+        "graph_analysis": {}
+    }
+
+    risks = analyze_intent_risks([intent], validation_results)
+
+    risk_types = [r[0] for r in risks["test_nan"].risks]
+    assert RiskType.NAN_VALUE in risk_types
+
 def test_analyze_intent_risks_medium():
     intents = [create_intent()]
     validation_results = {

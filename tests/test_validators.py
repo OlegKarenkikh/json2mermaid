@@ -66,17 +66,41 @@ def test_detect_circular_redirects():
     redirect_map = {
         "1": ["2"],
         "2": ["3"],
-        "3": ["1"], # Cycle
+        "3": ["1"], # Cycle: 1 -> 2 -> 3 -> 1
         "4": ["5"]
     }
     cycles = detect_circular_redirects(redirect_map)
-    # The current implementation returns the same cycle detected from different start nodes.
-    # 1->2->3->1, 2->3->1->2, 3->1->2->3
-    # This is suboptimal but we assert current behavior for now.
-    assert len(cycles) == 3
-
-    cycle_nodes = set(cycles[0][:-1])
+    
+    # После исправления алгоритма возвращается только 1 уникальный цикл
+    # (без дубликатов с разных стартовых узлов)
+    assert len(cycles) == 1
+    
+    # Проверяем что цикл содержит правильные узлы
+    cycle = cycles[0]
+    cycle_nodes = set(cycle[:-1])  # Убираем последний элемент (дубликат первого)
     assert cycle_nodes == {"1", "2", "3"}
+    
+    # Цикл должен заканчиваться тем же узлом, с которого начался
+    assert cycle[0] == cycle[-1]
+
+
+def test_detect_multiple_cycles():
+    """Тест на обнаружение нескольких независимых циклов"""
+    redirect_map = {
+        "a": ["b"],
+        "b": ["a"],  # Цикл 1: a -> b -> a
+        "x": ["y"],
+        "y": ["z"],
+        "z": ["x"],  # Цикл 2: x -> y -> z -> x
+    }
+    cycles = detect_circular_redirects(redirect_map)
+    
+    assert len(cycles) == 2
+    
+    # Собираем узлы каждого цикла
+    cycle_node_sets = [set(c[:-1]) for c in cycles]
+    assert {"a", "b"} in cycle_node_sets
+    assert {"x", "y", "z"} in cycle_node_sets
 
 def test_run_all_validations(capsys):
     intents = [

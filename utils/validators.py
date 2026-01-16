@@ -1,7 +1,7 @@
 # utils/validators.py v5.1
 """Comprehensive validation module with NaN handling"""
 
-from typing import List, Dict, Any, Set, Tuple
+from typing import List, Dict, Any, Set, Tuple, Optional
 from collections import defaultdict
 import json
 import math
@@ -182,30 +182,66 @@ def validate_redirects(intents: List[Dict]) -> Dict[str, Any]:
     return result
 
 def detect_circular_redirects(redirect_map: Dict[str, List[str]]) -> List[List[str]]:
-    """Detect circular redirect chains"""
-    cycles = []
+    """
+    Detect circular redirect chains.
     
-    def dfs(node: str, path: List[str], visited: Set[str]) -> None:
-        if node in path:
+    Использует алгоритм поиска циклов с нормализацией для исключения дубликатов.
+    Каждый цикл возвращается только один раз, начиная с минимального узла.
+    
+    Args:
+        redirect_map: Словарь {source_id: [target_ids]}
+        
+    Returns:
+        Список уникальных циклов, каждый цикл - список узлов [a, b, c, a]
+    """
+    found_cycles: Set[Tuple[str, ...]] = set()
+    
+    def normalize_cycle(cycle: List[str]) -> Tuple[str, ...]:
+        """Нормализует цикл для сравнения (начинает с минимального узла)"""
+        if len(cycle) <= 1:
+            return tuple(cycle)
+        
+        # Убираем последний элемент (дубликат первого)
+        nodes = cycle[:-1]
+        
+        # Находим минимальный узел и ротируем цикл
+        min_idx = nodes.index(min(nodes))
+        normalized = nodes[min_idx:] + nodes[:min_idx]
+        
+        # Добавляем первый элемент в конец для формата [a, b, c, a]
+        return tuple(normalized) + (normalized[0],)
+    
+    def dfs(node: str, path: List[str], path_set: Set[str], global_visited: Set[str]) -> None:
+        """DFS с обнаружением циклов"""
+        if node in path_set:
+            # Нашли цикл
             cycle_start = path.index(node)
             cycle = path[cycle_start:] + [node]
-            if cycle not in cycles:
-                cycles.append(cycle)
+            normalized = normalize_cycle(cycle)
+            found_cycles.add(normalized)
             return
         
-        if node in visited:
+        if node in global_visited:
             return
         
-        visited.add(node)
         path.append(node)
+        path_set.add(node)
         
         for target in redirect_map.get(node, []):
-            dfs(target, path.copy(), visited)
+            dfs(target, path, path_set, global_visited)
+        
+        path.pop()
+        path_set.remove(node)
+        global_visited.add(node)
     
+    # Запускаем DFS для каждого узла
+    global_visited: Set[str] = set()
     for start_node in redirect_map.keys():
-        dfs(start_node, [], set())
+        if start_node not in global_visited:
+            dfs(start_node, [], set(), global_visited)
     
-    return cycles
+    # Преобразуем обратно в список списков
+    return [list(cycle) for cycle in found_cycles]
 
 def run_all_validations(intents: List[Dict], all_data: Dict) -> Dict[str, Any]:
     """Run comprehensive validation suite"""
