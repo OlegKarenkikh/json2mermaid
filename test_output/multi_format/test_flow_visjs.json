@@ -1,0 +1,256 @@
+{
+  "nodes": [
+    {
+      "id": "8aeb7ad2-4d1a-4727-a923-f136def8a21a",
+      "label": "Главный интент. Внести изменения в по...",
+      "title": "Главный интент. Внести изменения в полис. Уточнение вида страхования. RegExp",
+      "group": "cc_regexp_main",
+      "color": {
+        "background": "#4CAF50",
+        "border": "#2E7D32"
+      }
+    },
+    {
+      "id": "ccNeedChangeOther",
+      "label": "ccNeedChangeOther",
+      "title": "ccNeedChangeOther",
+      "group": "external",
+      "shape": "ellipse",
+      "color": {
+        "background": "#FFC107",
+        "border": "#F57C00"
+      }
+    },
+    {
+      "id": "ccConsultationAutoOsagoChange",
+      "label": "ccConsultationAutoOsagoChange",
+      "title": "ccConsultationAutoOsagoChange",
+      "group": "external",
+      "shape": "ellipse",
+      "color": {
+        "background": "#FFC107",
+        "border": "#F57C00"
+      }
+    },
+    {
+      "id": "ccPolicyChangeAndProlong",
+      "label": "ccPolicyChangeAndProlong",
+      "title": "ccPolicyChangeAndProlong",
+      "group": "external",
+      "shape": "ellipse",
+      "color": {
+        "background": "#FFC107",
+        "border": "#F57C00"
+      }
+    },
+    {
+      "id": "ccOTMKASKOAQF",
+      "label": "ccOTMKASKOAQF",
+      "title": "ccOTMKASKOAQF",
+      "group": "external",
+      "shape": "ellipse",
+      "color": {
+        "background": "#FFC107",
+        "border": "#F57C00"
+      }
+    },
+    {
+      "id": "ccIFLChangePolis",
+      "label": "ccIFLChangePolis",
+      "title": "ccIFLChangePolis",
+      "group": "external",
+      "shape": "ellipse",
+      "color": {
+        "background": "#FFC107",
+        "border": "#F57C00"
+      }
+    },
+    {
+      "id": "cc_travel_change_1",
+      "label": "cc_travel_change_1",
+      "title": "cc_travel_change_1",
+      "group": "external",
+      "shape": "ellipse",
+      "color": {
+        "background": "#FFC107",
+        "border": "#F57C00"
+      }
+    },
+    {
+      "id": "kc_Gen_Int_NeedChange_DMS",
+      "label": "kc_Gen_Int_NeedChange_DMS",
+      "title": "kc_Gen_Int_NeedChange_DMS",
+      "group": "external",
+      "shape": "ellipse",
+      "color": {
+        "background": "#FFC107",
+        "border": "#F57C00"
+      }
+    },
+    {
+      "id": "ccMortgageChanges",
+      "label": "ccMortgageChanges",
+      "title": "ccMortgageChanges",
+      "group": "external",
+      "shape": "ellipse",
+      "color": {
+        "background": "#FFC107",
+        "border": "#F57C00"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "e0",
+      "from": "8aeb7ad2-4d1a-4727-a923-f136def8a21a",
+      "to": "ccConsultationAutoOsagoChange",
+      "label": "button: ОСАГО",
+      "color": "#1976D2",
+      "arrows": "to"
+    },
+    {
+      "id": "e1",
+      "from": "8aeb7ad2-4d1a-4727-a923-f136def8a21a",
+      "to": "ccOTMKASKOAQF",
+      "label": "button: Каско",
+      "color": "#1976D2",
+      "arrows": "to"
+    },
+    {
+      "id": "e2",
+      "from": "8aeb7ad2-4d1a-4727-a923-f136def8a21a",
+      "to": "ccMortgageChanges",
+      "label": "button: Ипотечное...",
+      "color": "#1976D2",
+      "arrows": "to"
+    },
+    {
+      "id": "e3",
+      "from": "8aeb7ad2-4d1a-4727-a923-f136def8a21a",
+      "to": "ccIFLChangePolis",
+      "label": "button: Страхован...",
+      "color": "#1976D2",
+      "arrows": "to"
+    },
+    {
+      "id": "e4",
+      "from": "8aeb7ad2-4d1a-4727-a923-f136def8a21a",
+      "to": "cc_travel_change_1",
+      "label": "button: Путешествия",
+      "color": "#1976D2",
+      "arrows": "to"
+    },
+    {
+      "id": "e5",
+      "from": "8aeb7ad2-4d1a-4727-a923-f136def8a21a",
+      "to": "kc_Gen_Int_NeedChange_DMS",
+      "label": "button: ДМС",
+      "color": "#1976D2",
+      "arrows": "to"
+    },
+    {
+      "id": "e6",
+      "from": "8aeb7ad2-4d1a-4727-a923-f136def8a21a",
+      "to": "ccNeedChangeOther",
+      "label": "button: Другое",
+      "color": "#1976D2",
+      "arrows": "to"
+    },
+    {
+      "id": "e7",
+      "from": "8aeb7ad2-4d1a-4727-a923-f136def8a21a",
+      "to": "ccConsultationAutoOsagoChange",
+      "label": "action: ОСАГО",
+      "color": "#1976D2",
+      "arrows": "to"
+    },
+    {
+      "id": "e8",
+      "from": "8aeb7ad2-4d1a-4727-a923-f136def8a21a",
+      "to": "ccOTMKASKOAQF",
+      "label": "action: Каско",
+      "color": "#1976D2",
+      "arrows": "to"
+    },
+    {
+      "id": "e9",
+      "from": "8aeb7ad2-4d1a-4727-a923-f136def8a21a",
+      "to": "ccMortgageChanges",
+      "label": "action: Ипотечное...",
+      "color": "#1976D2",
+      "arrows": "to"
+    },
+    {
+      "id": "e10",
+      "from": "8aeb7ad2-4d1a-4727-a923-f136def8a21a",
+      "to": "ccIFLChangePolis",
+      "label": "action: Страхован...",
+      "color": "#1976D2",
+      "arrows": "to"
+    },
+    {
+      "id": "e11",
+      "from": "8aeb7ad2-4d1a-4727-a923-f136def8a21a",
+      "to": "cc_travel_change_1",
+      "label": "action: Путешествия",
+      "color": "#1976D2",
+      "arrows": "to"
+    },
+    {
+      "id": "e12",
+      "from": "8aeb7ad2-4d1a-4727-a923-f136def8a21a",
+      "to": "kc_Gen_Int_NeedChange_DMS",
+      "label": "action: ДМС",
+      "color": "#1976D2",
+      "arrows": "to"
+    },
+    {
+      "id": "e13",
+      "from": "8aeb7ad2-4d1a-4727-a923-f136def8a21a",
+      "to": "ccNeedChangeOther",
+      "label": "action: Другое",
+      "color": "#1976D2",
+      "arrows": "to"
+    },
+    {
+      "id": "e14",
+      "from": "8aeb7ad2-4d1a-4727-a923-f136def8a21a",
+      "to": "ccConsultationAutoOsagoChange",
+      "label": "client_identifica...",
+      "color": "#4CAF50",
+      "arrows": "to"
+    },
+    {
+      "id": "e15",
+      "from": "8aeb7ad2-4d1a-4727-a923-f136def8a21a",
+      "to": "ccOTMKASKOAQF",
+      "label": "client_identifica...",
+      "color": "#4CAF50",
+      "arrows": "to"
+    },
+    {
+      "id": "e16",
+      "from": "8aeb7ad2-4d1a-4727-a923-f136def8a21a",
+      "to": "ccConsultationAutoOsagoChange",
+      "label": "ner_polis=ОСАГО",
+      "color": "#4CAF50",
+      "arrows": "to"
+    },
+    {
+      "id": "e17",
+      "from": "8aeb7ad2-4d1a-4727-a923-f136def8a21a",
+      "to": "ccOTMKASKOAQF",
+      "label": "ner_polis=КАСКО",
+      "color": "#4CAF50",
+      "arrows": "to"
+    },
+    {
+      "id": "e18",
+      "from": "8aeb7ad2-4d1a-4727-a923-f136def8a21a",
+      "to": "ccPolicyChangeAndProlong",
+      "label": "ner_intention_pro...",
+      "color": "#4CAF50",
+      "arrows": "to"
+    }
+  ]
+}

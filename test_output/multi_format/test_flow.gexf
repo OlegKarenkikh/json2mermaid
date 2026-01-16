@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gexf xmlns="http://www.gexf.net/1.2draft" version="1.2">
+  <meta lastmodifieddate="2024-01-01">
+    <creator>json2mermaid</creator>
+    <description>Dialog Flow Graph</description>
+  </meta>
+  <graph mode="static" defaultedgetype="directed">
+    <attributes class="node">
+      <attribute id="0" title="record_type" type="string"/>
+      <attribute id="1" title="is_external" type="boolean"/>
+    </attributes>
+    <attributes class="edge">
+      <attribute id="0" title="transition_type" type="string"/>
+      <attribute id="1" title="condition" type="string"/>
+    </attributes>
+    <nodes>
+      <node id="8aeb7ad2-4d1a-4727-a923-f136def8a21a" label="Главный интент. Внести изменения в полис. Уточн...">
+        <attvalues>
+          <attvalue for="0" value="cc_regexp_main"/>
+          <attvalue for="1" value="false"/>
+        </attvalues>
+        <viz:color r="76" g="175" b="80" xmlns:viz="http://www.gexf.net/1.2draft/viz"/>
+      </node>
+      <node id="ccNeedChangeOther" label="ccNeedChangeOther">
+        <attvalues>
+          <attvalue for="0" value="external"/>
+          <attvalue for="1" value="true"/>
+        </attvalues>
+        <viz:color r="255" g="193" b="7" xmlns:viz="http://www.gexf.net/1.2draft/viz"/>
+      </node>
+      <node id="ccConsultationAutoOsagoChange" label="ccConsultationAutoOsagoChange">
+        <attvalues>
+          <attvalue for="0" value="external"/>
+          <attvalue for="1" value="true"/>
+        </attvalues>
+        <viz:color r="255" g="193" b="7" xmlns:viz="http://www.gexf.net/1.2draft/viz"/>
+      </node>
+      <node id="ccPolicyChangeAndProlong" label="ccPolicyChangeAndProlong">
+        <attvalues>
+          <attvalue for="0" value="external"/>
+          <attvalue for="1" value="true"/>
+        </attvalues>
+        <viz:color r="255" g="193" b="7" xmlns:viz="http://www.gexf.net/1.2draft/viz"/>
+      </node>
+      <node id="ccOTMKASKOAQF" label="ccOTMKASKOAQF">
+        <attvalues>
+          <attvalue for="0" value="external"/>
+          <attvalue for="1" value="true"/>
+        </attvalues>
+        <viz:color r="255" g="193" b="7" xmlns:viz="http://www.gexf.net/1.2draft/viz"/>
+      </node>
+      <node id="ccIFLChangePolis" label="ccIFLChangePolis">
+        <attvalues>
+          <attvalue for="0" value="external"/>
+          <attvalue for="1" value="true"/>
+        </attvalues>
+        <viz:color r="255" g="193" b="7" xmlns:viz="http://www.gexf.net/1.2draft/viz"/>
+      </node>
+      <node id="cc_travel_change_1" label="cc_travel_change_1">
+        <attvalues>
+          <attvalue for="0" value="external"/>
+          <attvalue for="1" value="true"/>
+        </attvalues>
+        <viz:color r="255" g="193" b="7" xmlns:viz="http://www.gexf.net/1.2draft/viz"/>
+      </node>
+      <node id="kc_Gen_Int_NeedChange_DMS" label="kc_Gen_Int_NeedChange_DMS">
+        <attvalues>
+          <attvalue for="0" value="external"/>
+          <attvalue for="1" value="true"/>
+        </attvalues>
+        <viz:color r="255" g="193" b="7" xmlns:viz="http://www.gexf.net/1.2draft/viz"/>
+      </node>
+      <node id="ccMortgageChanges" label="ccMortgageChanges">
+        <attvalues>
+          <attvalue for="0" value="external"/>
+          <attvalue for="1" value="true"/>
+        </attvalues>
+        <viz:color r="255" g="193" b="7" xmlns:viz="http://www.gexf.net/1.2draft/viz"/>
+      </node>
+    </nodes>
+    <edges>
+      <edge id="0" source="8aeb7ad2-4d1a-4727-a923-f136def8a21a" target="ccConsultationAutoOsagoChange">
+        <attvalues>
+          <attvalue for="0" value="button_action"/>
+          <attvalue for="1" value="button: ОСАГО"/>
+        </attvalues>
+      </edge>
+      <edge id="1" source="8aeb7ad2-4d1a-4727-a923-f136def8a21a" target="ccOTMKASKOAQF">
+        <attvalues>
+          <attvalue for="0" value="button_action"/>
+          <attvalue for="1" value="button: Каско"/>
+        </attvalues>
+      </edge>
+      <edge id="2" source="8aeb7ad2-4d1a-4727-a923-f136def8a21a" target="ccMortgageChanges">
+        <attvalues>
+          <attvalue for="0" value="button_action"/>
+          <attvalue for="1" value="button: Ипотечное страхование"/>
+        </attvalues>
+      </edge>
+      <edge id="3" source="8aeb7ad2-4d1a-4727-a923-f136def8a21a" target="ccIFLChangePolis">
+        <attvalues>
+          <attvalue for="0" value="button_action"/>
+          <attvalue for="1" value="button: Страхование имущества"/>
+        </attvalues>
+      </edge>
+      <edge id="4" source="8aeb7ad2-4d1a-4727-a923-f136def8a21a" target="cc_travel_change_1">
+        <attvalues>
+          <attvalue for="0" value="button_action"/>
+          <attvalue for="1" value="button: Путешествия"/>
+        </attvalues>
+      </edge>
+      <edge id="5" source="8aeb7ad2-4d1a-4727-a923-f136def8a21a" target="kc_Gen_Int_NeedChange_DMS">
+        <attvalues>
+          <attvalue for="0" value="button_action"/>
+          <attvalue for="1" value="button: ДМС"/>
+        </attvalues>
+      </edge>
+      <edge id="6" source="8aeb7ad2-4d1a-4727-a923-f136def8a21a" target="ccNeedChangeOther">
+        <attvalues>
+          <attvalue for="0" value="button_action"/>
+          <attvalue for="1" value="button: Другое"/>
+        </attvalues>
+      </edge>
+      <edge id="7" source="8aeb7ad2-4d1a-4727-a923-f136def8a21a" target="ccConsultationAutoOsagoChange">
+        <attvalues>
+          <attvalue for="0" value="action_redirect"/>
+          <attvalue for="1" value="action: ОСАГО"/>
+        </attvalues>
+      </edge>
+      <edge id="8" source="8aeb7ad2-4d1a-4727-a923-f136def8a21a" target="ccOTMKASKOAQF">
+        <attvalues>
+          <attvalue for="0" value="action_redirect"/>
+          <attvalue for="1" value="action: Каско"/>
+        </attvalues>
+      </edge>
+      <edge id="9" source="8aeb7ad2-4d1a-4727-a923-f136def8a21a" target="ccMortgageChanges">
+        <attvalues>
+          <attvalue for="0" value="action_redirect"/>
+          <attvalue for="1" value="action: Ипотечное страхование"/>
+        </attvalues>
+      </edge>
+      <edge id="10" source="8aeb7ad2-4d1a-4727-a923-f136def8a21a" target="ccIFLChangePolis">
+        <attvalues>
+          <attvalue for="0" value="action_redirect"/>
+          <attvalue for="1" value="action: Страхование имущества"/>
+        </attvalues>
+      </edge>
+      <edge id="11" source="8aeb7ad2-4d1a-4727-a923-f136def8a21a" target="cc_travel_change_1">
+        <attvalues>
+          <attvalue for="0" value="action_redirect"/>
+          <attvalue for="1" value="action: Путешествия"/>
+        </attvalues>
+      </edge>
+      <edge id="12" source="8aeb7ad2-4d1a-4727-a923-f136def8a21a" target="kc_Gen_Int_NeedChange_DMS">
+        <attvalues>
+          <attvalue for="0" value="action_redirect"/>
+          <attvalue for="1" value="action: ДМС"/>
+        </attvalues>
+      </edge>
+      <edge id="13" source="8aeb7ad2-4d1a-4727-a923-f136def8a21a" target="ccNeedChangeOther">
+        <attvalues>
+          <attvalue for="0" value="action_redirect"/>
+          <attvalue for="1" value="action: Другое"/>
+        </attvalues>
+      </edge>
+      <edge id="14" source="8aeb7ad2-4d1a-4727-a923-f136def8a21a" target="ccConsultationAutoOsagoChange">
+        <attvalues>
+          <attvalue for="0" value="text_redirect"/>
+          <attvalue for="1" value="client_identification=Идентифицирован AND profile_client_product=__FILLED__ AND MainPolis=ОСАГО"/>
+        </attvalues>
+      </edge>
+      <edge id="15" source="8aeb7ad2-4d1a-4727-a923-f136def8a21a" target="ccOTMKASKOAQF">
+        <attvalues>
+          <attvalue for="0" value="text_redirect"/>
+          <attvalue for="1" value="client_identification=Идентифицирован AND profile_client_product=__FILLED__ AND MainPolis=КАСКО"/>
+        </attvalues>
+      </edge>
+      <edge id="16" source="8aeb7ad2-4d1a-4727-a923-f136def8a21a" target="ccConsultationAutoOsagoChange">
+        <attvalues>
+          <attvalue for="0" value="text_redirect"/>
+          <attvalue for="1" value="ner_polis=ОСАГО"/>
+        </attvalues>
+      </edge>
+      <edge id="17" source="8aeb7ad2-4d1a-4727-a923-f136def8a21a" target="ccOTMKASKOAQF">
+        <attvalues>
+          <attvalue for="0" value="text_redirect"/>
+          <attvalue for="1" value="ner_polis=КАСКО"/>
+        </attvalues>
+      </edge>
+      <edge id="18" source="8aeb7ad2-4d1a-4727-a923-f136def8a21a" target="ccPolicyChangeAndProlong">
+        <attvalues>
+          <attvalue for="0" value="text_redirect"/>
+          <attvalue for="1" value="ner_intention_prolong=Продлить"/>
+        </attvalues>
+      </edge>
+    </edges>
+  </graph>
+</gexf>

@@ -65,6 +65,13 @@ except ImportError:
     DIAGRAM_EXPORT_AVAILABLE = False
     print("⚠️  Diagram export module not available")
 
+try:
+    from utils.multi_format_exporter import export_all_formats
+    MULTI_FORMAT_EXPORT_AVAILABLE = True
+except ImportError:
+    MULTI_FORMAT_EXPORT_AVAILABLE = False
+    print("⚠️  Multi-format export module not available")
+
 def print_header():
     """Печать красивого заголовка"""
     print()
@@ -278,35 +285,52 @@ def main():
         all_data['intent_risks'] = intent_risks
         all_data['quality_metrics'] = quality_metrics
 
-    # 6.1 Diagram export (Mermaid) - Передаём полные объекты Transition
+    # 6.1 Diagram export - Передаём полные объекты Transition
     if EXPORT_DIAGRAMS and DIAGRAM_EXPORT_AVAILABLE:
         print()
         print("=" * 80)
         print("🖌️  ЭТАП 6: Генерация диаграмм")
         print("=" * 80)
         
-        # Стандартная диаграмма графа
-        diagram_path = os.path.join(OUTPUT_DIR, "graph.mmd")
-        export_mermaid_graph(
-            intents=intents,
-            transitions=transitions_full,  # Полные объекты!
-            intent_risks=all_data.get('intent_risks'),
-            output_path=diagram_path,
-            include_legend=INCLUDE_LEGEND,
-        )
-        print(f"\n🖌️  Диаграмма графа сохранена: {diagram_path}")
+        # Mermaid диаграммы (для небольших графов)
+        if len(intents) <= 1000:
+            # Стандартная диаграмма графа
+            diagram_path = os.path.join(OUTPUT_DIR, "graph.mmd")
+            export_mermaid_graph(
+                intents=intents,
+                transitions=transitions_full,  # Полные объекты!
+                intent_risks=all_data.get('intent_risks'),
+                output_path=diagram_path,
+                include_legend=INCLUDE_LEGEND,
+            )
+            print(f"\n🖌️  Mermaid диаграмма сохранена: {diagram_path}")
+            
+            # Детальная диаграмма с полной логикой обработки
+            detailed_diagram_path = os.path.join(OUTPUT_DIR, "detailed_flow.mmd")
+            export_detailed_flow_diagram(
+                intents=intents,
+                output_path=detailed_diagram_path,
+                show_slot_conditions=True,
+                show_buttons=True,
+                show_regex=True,
+            )
+            print(f"🖌️  Детальная Mermaid диаграмма: {detailed_diagram_path}")
+            print(f"👁️  Просмотр Mermaid: https://mermaid.live/")
+        else:
+            print(f"\n⚠️  Mermaid пропущен ({len(intents)} интентов > 1000 лимит)")
         
-        # Детальная диаграмма с полной логикой обработки
-        detailed_diagram_path = os.path.join(OUTPUT_DIR, "detailed_flow.mmd")
-        export_detailed_flow_diagram(
-            intents=intents,
-            output_path=detailed_diagram_path,
-            show_slot_conditions=True,
-            show_buttons=True,
-            show_regex=True,
-        )
-        print(f"🖌️  Детальная диаграмма логики сохранена: {detailed_diagram_path}")
-        print(f"👁️  Просмотр: https://mermaid.live/")
+        # Мульти-форматный экспорт (для больших графов)
+        if MULTI_FORMAT_EXPORT_AVAILABLE:
+            print()
+            export_all_formats(
+                intents=intents,
+                transitions=transitions_full,
+                output_dir=OUTPUT_DIR,
+                base_name="dialog_flow",
+                render_images=True,  # Попытаться создать SVG/PNG если Graphviz установлен
+            )
+        else:
+            print("\n⚠️  Мульти-форматный экспорт недоступен")
     
     # 7. Статистика
     print()
@@ -355,9 +379,18 @@ def main():
     if RISK_ANALYSIS_AVAILABLE:
         print(f"📄 Отчёт рисков: {OUTPUT_DIR}/risk_analysis.json")
     if EXPORT_DIAGRAMS:
-        print(f"🖌️  Диаграмма: {OUTPUT_DIR}/graph.mmd")
+        print(f"🖌️  Диаграммы:")
+        if len(intents) <= 1000:
+            print(f"   • Mermaid: {OUTPUT_DIR}/graph.mmd, detailed_flow.mmd")
+        print(f"   • Graphviz: {OUTPUT_DIR}/dialog_flow.dot (.svg)")
+        print(f"   • GraphML (yEd): {OUTPUT_DIR}/dialog_flow.graphml")
+        print(f"   • GEXF (Gephi): {OUTPUT_DIR}/dialog_flow.gexf")
+        print(f"   • JSON (web): {OUTPUT_DIR}/dialog_flow_*.json")
     print()
-    print("💡 Используйте полученные данные для оптимизации диалоговых потоков")
+    print("💡 Рекомендации по просмотру больших диаграмм:")
+    print("   • Gephi (https://gephi.org/) - лучший для 1000+ узлов")
+    print("   • yEd (https://www.yworks.com/yed) - хорош для GraphML")
+    print("   • Cytoscape (https://cytoscape.org/) - интерактивный анализ")
     print()
     
     return 0

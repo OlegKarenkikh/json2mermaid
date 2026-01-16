@@ -1,0 +1,107 @@
+digraph "DialogFlow" {
+    rankdir=TB;
+    node [shape=box, style="rounded,filled", fontname="Arial", fontsize=10];
+    edge [fontname="Arial", fontsize=8];
+    graph [fontname="Arial", splines=true, overlap=false];
+
+    subgraph cluster_0 {
+        label="cc_regexp_main";
+        style=rounded;
+        color="#BDBDBD";
+
+        n_8aeb7ad2_4d1a_4727_a923_f136def8a21a [
+            label="Главный интент. Внести изменения в по..."
+            fillcolor="#4CAF50"
+            color="#2E7D32"
+            tooltip="8aeb7ad2-4d1a-4727-a923-f136def8a21a"
+        ];
+    }
+
+    // External targets
+    ccNeedChangeOther [
+        label="ccNeedChangeOther"
+        fillcolor="#FFC107"
+        color="#F57C00"
+        shape=ellipse
+        tooltip="ccNeedChangeOther"
+    ];
+    ccConsultationAutoOsagoChange [
+        label="ccConsultationAutoOsagoChange"
+        fillcolor="#FFC107"
+        color="#F57C00"
+        shape=ellipse
+        tooltip="ccConsultationAutoOsagoChange"
+    ];
+    ccPolicyChangeAndProlong [
+        label="ccPolicyChangeAndProlong"
+        fillcolor="#FFC107"
+        color="#F57C00"
+        shape=ellipse
+        tooltip="ccPolicyChangeAndProlong"
+    ];
+    ccOTMKASKOAQF [
+        label="ccOTMKASKOAQF"
+        fillcolor="#FFC107"
+        color="#F57C00"
+        shape=ellipse
+        tooltip="ccOTMKASKOAQF"
+    ];
+    ccIFLChangePolis [
+        label="ccIFLChangePolis"
+        fillcolor="#FFC107"
+        color="#F57C00"
+        shape=ellipse
+        tooltip="ccIFLChangePolis"
+    ];
+    cc_travel_change_1 [
+        label="cc_travel_change_1"
+        fillcolor="#FFC107"
+        color="#F57C00"
+        shape=ellipse
+        tooltip="cc_travel_change_1"
+    ];
+    kc_Gen_Int_NeedChange_DMS [
+        label="kc_Gen_Int_NeedChange_DMS"
+        fillcolor="#FFC107"
+        color="#F57C00"
+        shape=ellipse
+        tooltip="kc_Gen_Int_NeedChange_DMS"
+    ];
+    ccMortgageChanges [
+        label="ccMortgageChanges"
+        fillcolor="#FFC107"
+        color="#F57C00"
+        shape=ellipse
+        tooltip="ccMortgageChanges"
+    ];
+
+    // Edges
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a -> ccConsultationAutoOsagoChange [color="#1976D2", label="button: ОСАГО"];
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a -> ccOTMKASKOAQF [color="#1976D2", label="button: Каско"];
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a -> ccMortgageChanges [color="#1976D2", label="button: Ипотечное стра..."];
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a -> ccIFLChangePolis [color="#1976D2", label="button: Страхование им..."];
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a -> cc_travel_change_1 [color="#1976D2", label="button: Путешествия"];
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a -> kc_Gen_Int_NeedChange_DMS [color="#1976D2", label="button: ДМС"];
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a -> ccNeedChangeOther [color="#1976D2", label="button: Другое"];
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a -> ccConsultationAutoOsagoChange [color="#1976D2", label="action: ОСАГО"];
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a -> ccOTMKASKOAQF [color="#1976D2", label="action: Каско"];
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a -> ccMortgageChanges [color="#1976D2", label="action: Ипотечное стра..."];
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a -> ccIFLChangePolis [color="#1976D2", label="action: Страхование им..."];
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a -> cc_travel_change_1 [color="#1976D2", label="action: Путешествия"];
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a -> kc_Gen_Int_NeedChange_DMS [color="#1976D2", label="action: ДМС"];
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a -> ccNeedChangeOther [color="#1976D2", label="action: Другое"];
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a -> ccConsultationAutoOsagoChange [color="#4CAF50", penwidth=2, label="client_identification=..."];
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a -> ccOTMKASKOAQF [color="#4CAF50", penwidth=2, label="client_identification=..."];
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a -> ccConsultationAutoOsagoChange [color="#4CAF50", penwidth=2, label="ner_polis=ОСАГО"];
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a -> ccOTMKASKOAQF [color="#4CAF50", penwidth=2, label="ner_polis=КАСКО"];
+    n_8aeb7ad2_4d1a_4727_a923_f136def8a21a -> ccPolicyChangeAndProlong [color="#4CAF50", penwidth=2, label="ner_intention_prolong=..."];
+
+    // Legend
+    subgraph cluster_legend {
+        label="Legend";
+        style=rounded;
+        legend_main [label="Main Intent" fillcolor="#4CAF50" color="#2E7D32"];
+        legend_match [label="Match Intent" fillcolor="#2196F3" color="#1565C0"];
+        legend_external [label="External Target" fillcolor="#FFC107" color="#F57C00" shape=ellipse];
+    }
+}

@@ -1,0 +1,35 @@
+{
+  "nodes": [
+    {
+      "id": "1",
+      "label": "Greeting",
+      "title": "Greeting",
+      "group": "cc_regexp_main",
+      "color": {
+        "background": "#4CAF50",
+        "border": "#2E7D32"
+      }
+    },
+    {
+      "id": "2",
+      "label": "Help",
+      "title": "Help",
+      "group": "cc_match",
+      "color": {
+        "background": "#2196F3",
+        "border": "#1565C0"
+      }
+    },
+    {
+      "id": "3",
+      "label": "Exit",
+      "title": "Exit",
+      "group": "cc_match",
+      "color": {
+        "background": "#2196F3",
+        "border": "#1565C0"
+      }
+    }
+  ],
+  "edges": []
+}
