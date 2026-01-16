@@ -14,8 +14,13 @@ def convert_ticks_to_datetime(ticks: int) -> Optional[datetime]:
         TICKS_TO_UNIX_EPOCH = 621355968000000000
         TICKS_PER_SECOND = 10000000
         unix_seconds = (ticks - TICKS_TO_UNIX_EPOCH) / TICKS_PER_SECOND
+        
+        # Range validation to prevent OSError on Windows
+        if unix_seconds < 0 or unix_seconds > 253402300799:
+            return None
+        
         return datetime.fromtimestamp(unix_seconds)
-    except (ValueError, OverflowError):
+    except (ValueError, OverflowError, OSError):
         return None
 
 def analyze_data_freshness(intents: List[Dict], reference_date: Optional[datetime] = None) -> Dict[str, Any]:
@@ -26,19 +31,29 @@ def analyze_data_freshness(intents: List[Dict], reference_date: Optional[datetim
         reference_date = datetime.now()
     
     version_dates = []
+    skipped = 0
+    
     for intent in intents:
         version = intent.get('version', 0)
         if version > 0:
             dt = convert_ticks_to_datetime(version)
             if dt:
                 version_dates.append(dt)
+            else:
+                skipped += 1
     
     if not version_dates:
         print("   ⚠️  Нет данных о версиях")
+        if skipped > 0:
+            print(f"   (пропущено невалидных: {skipped})")
         return {
             'has_version_data': False,
-            'message': 'No version data available'
+            'message': 'No version data available',
+            'skipped_invalid': skipped
         }
+    
+    if skipped > 0:
+        print(f"   ⚠️  Пропущено невалидных timestamps: {skipped}")
     
     # Sort dates
     version_dates.sort()
@@ -91,7 +106,8 @@ def analyze_data_freshness(intents: List[Dict], reference_date: Optional[datetim
         'updated_last_month': last_month,
         'last_month_percentage': round(recent_ratio * 100, 1),
         'activity_score': activity_score,
-        'freshness': freshness
+        'freshness': freshness,
+        'skipped_invalid': skipped
     }
 
 def get_update_distribution(intents: List[Dict]) -> Dict[str, Any]:
