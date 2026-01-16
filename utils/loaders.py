@@ -9,7 +9,7 @@ def load_intents(filepath: str, max_lines: Optional[int] = None) -> Tuple[List[D
     from .version_manager import filter_expired_intents, get_version_statistics
     
     if max_lines is None:
-        max_lines = MAX_LINES if MAX_LINES > 0 else 1000000
+        max_lines = MAX_LINES if (MAX_LINES is not None and MAX_LINES > 0) else 1000000
     
     if not os.path.exists(filepath):
         print(f"❌ Файл не найден: {filepath}")
@@ -37,12 +37,12 @@ def load_intents(filepath: str, max_lines: Optional[int] = None) -> Tuple[List[D
             
         if isinstance(data, list):
             print(f"✅ Loaded as JSON array: {len(data)} records")
-            intents = data[:max_lines]
+            intents = data[:max_lines] if max_lines < len(data) else data
             errors['success'] = len(intents)
         elif isinstance(data, dict):
             if 'intents' in data:
                 print(f"✅ Loaded from 'intents' key: {len(data['intents'])} records")
-                intents = data['intents'][:max_lines]
+                intents = data['intents'][:max_lines] if max_lines < len(data['intents']) else data['intents']
                 errors['success'] = len(intents)
             else:
                 print(f"✅ Loaded single dict as 1 record")
