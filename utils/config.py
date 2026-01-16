@@ -17,7 +17,7 @@ FILTER_EXPIRED = True  # Filter out expired intents
 # Export settings
 EXPORT_CSV = True
 EXPORT_JSON = True
-EXPORT_DIAGRAMS = False  # Set to True if you want to generate diagrams
+EXPORT_DIAGRAMS = True  # Генерация Mermaid диаграмм включена!
 
 # Diagram settings (if EXPORT_DIAGRAMS = True)
 DIAGRAM_FORMAT = "svg"  # svg, png, pdf
