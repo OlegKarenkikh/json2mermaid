@@ -321,13 +321,20 @@ def main():
         
         # Мульти-форматный экспорт (для больших графов)
         if MULTI_FORMAT_EXPORT_AVAILABLE:
+            # Получаем настройки из конфига (с fallback значениями)
+            render_images = getattr(sys.modules['utils.config'], 'RENDER_GRAPHVIZ_IMAGES', True)
+            max_nodes_render = getattr(sys.modules['utils.config'], 'MAX_NODES_FOR_RENDER', 300)
+            render_timeout = getattr(sys.modules['utils.config'], 'RENDER_TIMEOUT_SECONDS', 60)
+            
             print()
             export_all_formats(
                 intents=intents,
                 transitions=transitions_full,
                 output_dir=OUTPUT_DIR,
                 base_name="dialog_flow",
-                render_images=True,  # Попытаться создать SVG/PNG если Graphviz установлен
+                render_images=render_images,
+                max_nodes_for_render=max_nodes_render,
+                render_timeout=render_timeout,
             )
         else:
             print("\n⚠️  Мульти-форматный экспорт недоступен")

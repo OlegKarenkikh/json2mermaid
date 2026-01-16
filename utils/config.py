@@ -24,6 +24,12 @@ DIAGRAM_FORMAT = "svg"  # svg, png, pdf
 MAX_NODES_PER_DIAGRAM = 50
 INCLUDE_LEGEND = True
 
+# Multi-format export settings
+RENDER_GRAPHVIZ_IMAGES = True      # Рендерить SVG/PNG через Graphviz
+MAX_NODES_FOR_RENDER = 300         # Не рендерить автоматически если больше узлов
+RENDER_TIMEOUT_SECONDS = 60        # Таймаут рендеринга Graphviz в секундах
+MERMAID_MAX_NODES = 1000           # Лимит узлов для Mermaid диаграмм
+
 # Validation thresholds
 MAX_TITLE_LENGTH = 200
 MAX_ANSWERS_PER_INTENT = 10

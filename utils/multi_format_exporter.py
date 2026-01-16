@@ -99,6 +99,75 @@ def _get_edge_style(transition_type: str) -> Tuple[str, str]:
 # GRAPHVIZ DOT EXPORT
 # =============================================================================
 
+def build_id_mappings(intents: List[Dict]) -> Dict[str, Any]:
+    """
+    Строит маппинги для разрешения связей между интентами.
+    Связи могут быть через intent_id, symbol_code или action_id.
+    
+    ВАЖНО: В данных связи часто задаются через symbol_code, а не intent_id!
+    Например: REDIRECT_TO_INTENT ccConsultationAutoOsagoChange
+    где ccConsultationAutoOsagoChange - это symbol_code целевого интента.
+    """
+    mappings = {
+        'by_intent_id': {},
+        'by_symbol_code': {},
+        'symbol_to_intent': {},
+        'intent_to_symbol': {},
+        'all_intent_ids': set(),
+        'all_symbol_codes': set(),
+        'all_known_refs': set(),  # Все известные идентификаторы (intent_id + symbol_code)
+    }
+    
+    for intent in intents:
+        intent_id = _safe_str(intent.get('intent_id'), '')
+        symbol_code = _safe_str(intent.get('symbol_code'), '')
+        
+        if intent_id:
+            mappings['by_intent_id'][intent_id] = intent
+            mappings['all_intent_ids'].add(intent_id)
+            mappings['all_known_refs'].add(intent_id)
+        
+        if symbol_code:
+            mappings['by_symbol_code'][symbol_code] = intent
+            mappings['all_symbol_codes'].add(symbol_code)
+            mappings['all_known_refs'].add(symbol_code)
+            if intent_id:
+                mappings['symbol_to_intent'][symbol_code] = intent_id
+                mappings['intent_to_symbol'][intent_id] = symbol_code
+    
+    return mappings
+
+
+def resolve_target(target: str, mappings: Dict) -> Tuple[str, str, bool]:
+    """
+    Разрешает идентификатор цели.
+    
+    Args:
+        target: Идентификатор цели (может быть intent_id или symbol_code)
+        mappings: Маппинги из build_id_mappings()
+    
+    Returns: 
+        (node_id для графа, label для отображения, is_internal)
+        
+    ВАЖНО: Связи обычно задаются через symbol_code!
+    """
+    if not target:
+        return target, target, False
+    
+    # Если это symbol_code - используем его как node_id
+    if target in mappings.get('all_symbol_codes', set()):
+        return target, target, True
+    
+    # Если это intent_id - проверяем есть ли symbol_code
+    if target in mappings.get('all_intent_ids', set()):
+        # Предпочитаем symbol_code для консистентности
+        symbol = mappings.get('intent_to_symbol', {}).get(target, target)
+        return symbol if symbol else target, target, True
+    
+    # Не найдено - внешняя цель
+    return target, target, False
+
+
 def export_graphviz_dot(
     intents: Iterable[Dict],
     transitions: Iterable[Transition],
@@ -135,20 +204,42 @@ def export_graphviz_dot(
     intent_list = list(intents)
     transition_list = list(transitions)
     
-    # Собираем все intent_id
-    all_intent_ids = set()
-    intent_by_id = {}
+    # Строим маппинги для разрешения связей
+    mappings = build_id_mappings(intent_list)
+    all_known_refs = mappings['all_known_refs']
+    
+    # Определяем node_id для каждого интента (предпочитаем symbol_code)
+    intent_node_ids = {}  # intent_id -> node_id для графа
+    node_to_intent = {}   # node_id -> intent
+    
     for intent in intent_list:
         intent_id = _safe_str(intent.get('intent_id'), '')
-        if intent_id:
-            all_intent_ids.add(intent_id)
-            intent_by_id[intent_id] = intent
+        symbol_code = _safe_str(intent.get('symbol_code'), '')
+        
+        # Предпочитаем symbol_code как node_id (так задаются связи!)
+        node_id = symbol_code if symbol_code else intent_id
+        if node_id:
+            intent_node_ids[intent_id] = node_id
+            node_to_intent[node_id] = intent
+            if symbol_code and intent_id:
+                intent_node_ids[symbol_code] = node_id  # symbol_code тоже резолвится
     
     # Находим внешние цели
     external_targets = set()
+    internal_edges = 0
+    
     for t in transition_list:
-        if t.target_id and t.target_id not in all_intent_ids:
-            external_targets.add(t.target_id)
+        target = t.target_id
+        if target in all_known_refs:
+            internal_edges += 1
+        else:
+            external_targets.add(target)
+    
+    # Функция для получения node_id интента (предпочитаем symbol_code)
+    def get_intent_node_id(intent):
+        symbol_code = _safe_str(intent.get('symbol_code'), '')
+        intent_id = _safe_str(intent.get('intent_id'), '')
+        return symbol_code if symbol_code else intent_id
     
     # Группировка по типам
     if cluster_by_type:
@@ -167,17 +258,20 @@ def export_graphviz_dot(
             
             for intent in type_intents:
                 intent_id = _safe_str(intent.get('intent_id'), '')
-                title = _safe_str(intent.get('title'), intent_id)
+                symbol_code = _safe_str(intent.get('symbol_code'), '')
+                title = _safe_str(intent.get('title'), symbol_code or intent_id)
                 title = _truncate(title, max_label_len)
                 
                 fill_color, border_color = _get_node_color(record_type)
-                node_id = _make_dot_node_id(intent_id)
+                # Используем symbol_code как node_id (так задаются связи!)
+                graph_node_id = symbol_code if symbol_code else intent_id
+                node_id = _make_dot_node_id(graph_node_id)
                 
                 lines.append(f'        {node_id} [')
                 lines.append(f'            label="{_escape_dot_string(title)}"')
                 lines.append(f'            fillcolor="{fill_color}"')
                 lines.append(f'            color="{border_color}"')
-                lines.append(f'            tooltip="{_escape_dot_string(intent_id)}"')
+                lines.append(f'            tooltip="{_escape_dot_string(symbol_code or intent_id)}"')
                 lines.append('        ];')
             
             lines.append('    }')
@@ -187,24 +281,26 @@ def export_graphviz_dot(
         # Без кластеризации
         for intent in intent_list:
             intent_id = _safe_str(intent.get('intent_id'), '')
-            title = _safe_str(intent.get('title'), intent_id)
+            symbol_code = _safe_str(intent.get('symbol_code'), '')
+            title = _safe_str(intent.get('title'), symbol_code or intent_id)
             title = _truncate(title, max_label_len)
             record_type = _safe_str(intent.get('record_type'), '')
             
             fill_color, border_color = _get_node_color(record_type)
-            node_id = _make_dot_node_id(intent_id)
+            graph_node_id = symbol_code if symbol_code else intent_id
+            node_id = _make_dot_node_id(graph_node_id)
             
             lines.append(f'    {node_id} [')
             lines.append(f'        label="{_escape_dot_string(title)}"')
             lines.append(f'        fillcolor="{fill_color}"')
             lines.append(f'        color="{border_color}"')
-            lines.append(f'        tooltip="{_escape_dot_string(intent_id)}"')
+            lines.append(f'        tooltip="{_escape_dot_string(symbol_code or intent_id)}"')
             lines.append('    ];')
         lines.append('')
     
-    # Внешние узлы
+    # Внешние узлы (цели которых нет в файле)
     if external_targets:
-        lines.append('    // External targets')
+        lines.append('    // External targets (not in current file)')
         for ext_id in external_targets:
             node_id = _make_dot_node_id(ext_id)
             fill_color, border_color = _get_node_color('', is_external=True)
@@ -219,11 +315,16 @@ def export_graphviz_dot(
             lines.append('    ];')
         lines.append('')
     
-    # Рёбра
+    # Рёбра - source_id это intent_id, нужно преобразовать в symbol_code
     lines.append('    // Edges')
     for t in transition_list:
-        src_id = _make_dot_node_id(t.source_id)
+        # Резолвим source через маппинг intent_id -> symbol_code
+        src_symbol = mappings.get('intent_to_symbol', {}).get(t.source_id, t.source_id)
+        src_id = _make_dot_node_id(src_symbol)
+        
+        # target_id уже должен быть symbol_code (так задаются связи)
         tgt_id = _make_dot_node_id(t.target_id)
+        
         style, color = _get_edge_style(t.transition_type)
         
         edge_attrs = [f'color="{color}"']
@@ -259,9 +360,18 @@ def export_graphviz_dot(
         f.write('\n'.join(lines))
     
     print(f"\n📊 Graphviz DOT диаграмма создана:")
-    print(f"   Узлов: {len(intent_list) + len(external_targets)}")
+    print(f"   Интентов: {len(intent_list)}")
+    print(f"   Внешних целей: {len(external_targets)}")
+    print(f"   Всего узлов: {len(intent_list) + len(external_targets)}")
     print(f"   Рёбер: {len(transition_list)}")
+    print(f"   Внутренних связей: {internal_edges}")
     print(f"   Файл: {output_path}")
+    
+    if len(transition_list) == 0:
+        print(f"   ⚠️  Переходы не найдены! Проверьте структуру данных.")
+    elif internal_edges == 0:
+        print(f"   ⚠️  Все переходы ведут на внешние цели!")
+        print(f"   💡 Возможно связи через symbol_code - добавьте все интенты в файл")
     
     return output_path
 
@@ -285,6 +395,7 @@ def render_graphviz(
     dot_path: str,
     output_format: str = "svg",
     layout_engine: str = "dot",
+    timeout_seconds: int = 60,
 ) -> Optional[str]:
     """
     Рендеринг DOT файла в SVG/PNG через Graphviz.
@@ -299,6 +410,7 @@ def render_graphviz(
             - sfdp: масштабируемый force-directed (для больших графов!)
             - circo: круговая раскладка
             - twopi: радиальная раскладка
+        timeout_seconds: Таймаут в секундах (по умолчанию 60)
     
     Returns:
         Путь к созданному файлу или None при ошибке
@@ -310,35 +422,60 @@ def render_graphviz(
         result = subprocess.run(
             [layout_engine, '-V'],
             capture_output=True,
-            text=True
+            text=True,
+            timeout=5
         )
+        
+        print(f"   Рендеринг {output_format.upper()} через {layout_engine} (таймаут {timeout_seconds}с)...")
         
         # Рендерим
         cmd = [layout_engine, f'-T{output_format}', dot_path, '-o', output_path]
         
         # Для больших графов добавляем оптимизации
         if layout_engine == 'sfdp':
-            cmd.extend(['-Goverlap=prism', '-Gsplines=true'])
+            # sfdp оптимизации для больших графов
+            cmd.extend([
+                '-Goverlap=prism',      # Алгоритм удаления перекрытий
+                '-Gsplines=false',       # Отключаем сплайны (быстрее)
+                '-Gsep=+5',              # Минимальное расстояние
+                '-Gnodesep=0.1',         # Расстояние между узлами
+            ])
         elif layout_engine == 'fdp':
-            cmd.extend(['-Goverlap=false', '-Gsplines=true'])
+            cmd.extend([
+                '-Goverlap=false',
+                '-Gsplines=false',       # Отключаем сплайны для скорости
+            ])
         
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+        result = subprocess.run(
+            cmd, 
+            capture_output=True, 
+            text=True, 
+            timeout=timeout_seconds
+        )
         
         if result.returncode == 0:
-            print(f"✅ Graphviz {output_format.upper()} создан: {output_path}")
+            print(f"   ✅ Graphviz {output_format.upper()} создан: {output_path}")
             return output_path
         else:
-            print(f"⚠️  Ошибка Graphviz: {result.stderr}")
+            print(f"   ⚠️  Ошибка Graphviz: {result.stderr[:200]}")
             return None
             
     except FileNotFoundError:
-        print(f"⚠️  Graphviz ({layout_engine}) не установлен. Установите: apt install graphviz")
+        print(f"   ⚠️  Graphviz ({layout_engine}) не установлен")
+        print(f"      Установите: apt install graphviz (Linux) / brew install graphviz (Mac)")
         return None
     except subprocess.TimeoutExpired:
-        print(f"⚠️  Таймаут при рендеринге (граф слишком большой для {layout_engine})")
+        print(f"   ⚠️  Таймаут {timeout_seconds}с при рендеринге")
+        print(f"      Граф слишком большой для автоматического рендеринга")
+        print(f"      Используйте Gephi для просмотра .gexf файла")
+        # Убиваем зависший процесс
+        try:
+            subprocess.run(['pkill', '-f', layout_engine], capture_output=True, timeout=5)
+        except:
+            pass
         return None
     except Exception as e:
-        print(f"⚠️  Ошибка рендеринга: {e}")
+        print(f"   ⚠️  Ошибка рендеринга: {e}")
         return None
 
 
@@ -850,9 +987,20 @@ def export_all_formats(
     output_dir: str,
     base_name: str = "dialog_flow",
     render_images: bool = True,
+    max_nodes_for_render: int = 300,
+    render_timeout: int = 60,
 ) -> Dict[str, str]:
     """
     Экспорт во все поддерживаемые форматы.
+    
+    Args:
+        intents: Список интентов
+        transitions: Список переходов
+        output_dir: Директория для сохранения
+        base_name: Базовое имя файлов
+        render_images: Рендерить SVG/PNG через Graphviz
+        max_nodes_for_render: Максимум узлов для автоматического рендеринга (default: 300)
+        render_timeout: Таймаут рендеринга в секундах (default: 60)
     
     Returns:
         Словарь {формат: путь_к_файлу}
@@ -862,48 +1010,59 @@ def export_all_formats(
     # Конвертируем в списки один раз
     intent_list = list(intents)
     transition_list = list(transitions)
+    node_count = len(intent_list)
+    
+    # Подсчитываем внешние цели
+    all_intent_ids = {_safe_str(i.get('intent_id'), '') for i in intent_list}
+    external_count = len({t.target_id for t in transition_list if t.target_id not in all_intent_ids})
+    total_nodes = node_count + external_count
     
     results = {}
     
     print("\n" + "=" * 80)
     print("🖌️  Генерация диаграмм в нескольких форматах")
     print("=" * 80)
+    print(f"   Интентов: {node_count}, Внешних целей: {external_count}, Всего узлов: {total_nodes}")
+    print(f"   Рёбер: {len(transition_list)}")
     
-    # 1. Graphviz DOT
+    # 1. Graphviz DOT (всегда создаём - это быстро)
     dot_path = os.path.join(output_dir, f"{base_name}.dot")
     results['dot'] = export_graphviz_dot(intent_list, transition_list, dot_path)
     
-    # 2. Render SVG (если Graphviz установлен)
-    if render_images:
-        # Для больших графов используем sfdp
-        node_count = len(intent_list)
-        if node_count > 500:
+    # 2. Render SVG/PNG (только для небольших графов)
+    if render_images and total_nodes <= max_nodes_for_render:
+        print(f"\n📷 Автоматический рендеринг изображений ({total_nodes} узлов <= {max_nodes_for_render})...")
+        
+        # Выбор движка в зависимости от размера
+        if total_nodes > 200:
             engine = 'sfdp'  # Scalable force-directed
-            print(f"\n   Используем sfdp (масштабируемый) для {node_count} узлов...")
-        elif node_count > 100:
+        elif total_nodes > 50:
             engine = 'fdp'   # Force-directed
         else:
             engine = 'dot'   # Hierarchical
         
-        svg_path = render_graphviz(dot_path, 'svg', engine)
+        svg_path = render_graphviz(dot_path, 'svg', engine, render_timeout)
         if svg_path:
             results['svg'] = svg_path
         
-        # PNG только для небольших графов
-        if node_count <= 500:
-            png_path = render_graphviz(dot_path, 'png', engine)
+        # PNG только для маленьких графов (большие PNG огромные)
+        if total_nodes <= 100:
+            png_path = render_graphviz(dot_path, 'png', engine, render_timeout)
             if png_path:
                 results['png'] = png_path
+    elif render_images:
+        print(f"\n⏭️  Пропуск автоматического рендеринга ({total_nodes} узлов > {max_nodes_for_render})")
+        print(f"   Используйте Gephi или yEd для просмотра больших графов")
     
-    # 3. GraphML
+    # 3. GraphML (для yEd)
     graphml_path = os.path.join(output_dir, f"{base_name}.graphml")
     results['graphml'] = export_graphml(intent_list, transition_list, graphml_path)
     
-    # 4. GEXF (для Gephi)
+    # 4. GEXF (для Gephi - лучший для больших графов)
     gexf_path = os.path.join(output_dir, f"{base_name}.gexf")
     results['gexf'] = export_gexf(intent_list, transition_list, gexf_path)
     
-    # 5. JSON форматы
+    # 5. JSON форматы (для веб-визуализации)
     cytoscape_path = os.path.join(output_dir, f"{base_name}_cytoscape.json")
     results['cytoscape'] = export_json_graph(intent_list, transition_list, cytoscape_path, 'cytoscape')
     
@@ -919,12 +1078,20 @@ def export_all_formats(
     print("=" * 80)
     for fmt, path in results.items():
         if path:
-            print(f"   {fmt.upper():12s}: {path}")
+            size_kb = os.path.getsize(path) / 1024
+            print(f"   {fmt.upper():12s}: {path} ({size_kb:.1f} KB)")
     
     print("\n💡 Рекомендации по просмотру:")
-    print("   • Маленькие графы (<100 узлов): SVG в браузере")
-    print("   • Средние графы (100-1000): yEd + GraphML")
-    print("   • Большие графы (1000+): Gephi + GEXF")
-    print("   • Интерактивный веб: Cytoscape.js / vis.js + JSON")
+    if total_nodes < 100:
+        print("   ✅ Граф небольшой - можно открыть SVG в браузере")
+    elif total_nodes < 1000:
+        print("   📊 Средний граф - рекомендуется yEd + GraphML")
+        print("      Скачать: https://www.yworks.com/products/yed/download")
+    else:
+        print("   🔥 Большой граф - используйте Gephi + GEXF")
+        print("      Скачать: https://gephi.org/users/download/")
+        print("      Gephi поддерживает графы с миллионами узлов!")
+    
+    print("\n   Веб-визуализация: используйте JSON файлы с Cytoscape.js / vis.js / D3.js")
     
     return results

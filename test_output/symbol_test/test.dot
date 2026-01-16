@@ -1,0 +1,107 @@
+digraph "DialogFlow" {
+    rankdir=TB;
+    node [shape=box, style="rounded,filled", fontname="Arial", fontsize=10];
+    edge [fontname="Arial", fontsize=8];
+    graph [fontname="Arial", splines=true, overlap=false];
+
+    subgraph cluster_0 {
+        label="cc_regexp_main";
+        style=rounded;
+        color="#BDBDBD";
+
+        kc_Gen_Int_NeedChange_RegExp [
+            label="Главный интент. Внести изменения в по..."
+            fillcolor="#4CAF50"
+            color="#2E7D32"
+            tooltip="kc_Gen_Int_NeedChange_RegExp"
+        ];
+    }
+
+    // External targets (not in current file)
+    ccOTMKASKOAQF [
+        label="ccOTMKASKOAQF"
+        fillcolor="#FFC107"
+        color="#F57C00"
+        shape=ellipse
+        tooltip="ccOTMKASKOAQF"
+    ];
+    ccMortgageChanges [
+        label="ccMortgageChanges"
+        fillcolor="#FFC107"
+        color="#F57C00"
+        shape=ellipse
+        tooltip="ccMortgageChanges"
+    ];
+    cc_travel_change_1 [
+        label="cc_travel_change_1"
+        fillcolor="#FFC107"
+        color="#F57C00"
+        shape=ellipse
+        tooltip="cc_travel_change_1"
+    ];
+    ccConsultationAutoOsagoChange [
+        label="ccConsultationAutoOsagoChange"
+        fillcolor="#FFC107"
+        color="#F57C00"
+        shape=ellipse
+        tooltip="ccConsultationAutoOsagoChange"
+    ];
+    ccIFLChangePolis [
+        label="ccIFLChangePolis"
+        fillcolor="#FFC107"
+        color="#F57C00"
+        shape=ellipse
+        tooltip="ccIFLChangePolis"
+    ];
+    ccNeedChangeOther [
+        label="ccNeedChangeOther"
+        fillcolor="#FFC107"
+        color="#F57C00"
+        shape=ellipse
+        tooltip="ccNeedChangeOther"
+    ];
+    kc_Gen_Int_NeedChange_DMS [
+        label="kc_Gen_Int_NeedChange_DMS"
+        fillcolor="#FFC107"
+        color="#F57C00"
+        shape=ellipse
+        tooltip="kc_Gen_Int_NeedChange_DMS"
+    ];
+    ccPolicyChangeAndProlong [
+        label="ccPolicyChangeAndProlong"
+        fillcolor="#FFC107"
+        color="#F57C00"
+        shape=ellipse
+        tooltip="ccPolicyChangeAndProlong"
+    ];
+
+    // Edges
+    kc_Gen_Int_NeedChange_RegExp -> ccConsultationAutoOsagoChange [color="#1976D2", label="button: ОСАГО"];
+    kc_Gen_Int_NeedChange_RegExp -> ccOTMKASKOAQF [color="#1976D2", label="button: Каско"];
+    kc_Gen_Int_NeedChange_RegExp -> ccMortgageChanges [color="#1976D2", label="button: Ипотечное стра..."];
+    kc_Gen_Int_NeedChange_RegExp -> ccIFLChangePolis [color="#1976D2", label="button: Страхование им..."];
+    kc_Gen_Int_NeedChange_RegExp -> cc_travel_change_1 [color="#1976D2", label="button: Путешествия"];
+    kc_Gen_Int_NeedChange_RegExp -> kc_Gen_Int_NeedChange_DMS [color="#1976D2", label="button: ДМС"];
+    kc_Gen_Int_NeedChange_RegExp -> ccNeedChangeOther [color="#1976D2", label="button: Другое"];
+    kc_Gen_Int_NeedChange_RegExp -> ccConsultationAutoOsagoChange [color="#1976D2", label="action: ОСАГО"];
+    kc_Gen_Int_NeedChange_RegExp -> ccOTMKASKOAQF [color="#1976D2", label="action: Каско"];
+    kc_Gen_Int_NeedChange_RegExp -> ccMortgageChanges [color="#1976D2", label="action: Ипотечное стра..."];
+    kc_Gen_Int_NeedChange_RegExp -> ccIFLChangePolis [color="#1976D2", label="action: Страхование им..."];
+    kc_Gen_Int_NeedChange_RegExp -> cc_travel_change_1 [color="#1976D2", label="action: Путешествия"];
+    kc_Gen_Int_NeedChange_RegExp -> kc_Gen_Int_NeedChange_DMS [color="#1976D2", label="action: ДМС"];
+    kc_Gen_Int_NeedChange_RegExp -> ccNeedChangeOther [color="#1976D2", label="action: Другое"];
+    kc_Gen_Int_NeedChange_RegExp -> ccConsultationAutoOsagoChange [color="#4CAF50", penwidth=2, label="client_identification=..."];
+    kc_Gen_Int_NeedChange_RegExp -> ccOTMKASKOAQF [color="#4CAF50", penwidth=2, label="client_identification=..."];
+    kc_Gen_Int_NeedChange_RegExp -> ccConsultationAutoOsagoChange [color="#4CAF50", penwidth=2, label="ner_polis=ОСАГО"];
+    kc_Gen_Int_NeedChange_RegExp -> ccOTMKASKOAQF [color="#4CAF50", penwidth=2, label="ner_polis=КАСКО"];
+    kc_Gen_Int_NeedChange_RegExp -> ccPolicyChangeAndProlong [color="#4CAF50", penwidth=2, label="ner_intention_prolong=..."];
+
+    // Legend
+    subgraph cluster_legend {
+        label="Legend";
+        style=rounded;
+        legend_main [label="Main Intent" fillcolor="#4CAF50" color="#2E7D32"];
+        legend_match [label="Match Intent" fillcolor="#2196F3" color="#1565C0"];
+        legend_external [label="External Target" fillcolor="#FFC107" color="#F57C00" shape=ellipse];
+    }
+}
