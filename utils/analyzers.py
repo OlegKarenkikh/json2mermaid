@@ -1,9 +1,34 @@
 # utils/analyzers.py v5.2
-"""Intent analysis - 4-pass system"""
+"""Интент анализ - 4-проходная система"""
 
 from typing import Dict, List, Any
 from collections import defaultdict
 from .dataclasses import IntentClassification, Transition
+
+def _safe_list(value: Any, default: List = None) -> List:
+    """
+    Безопасное преобразование в список
+    Обрабатывает NaN, None, float и другие невалидные значения
+    """
+    if default is None:
+        default = []
+    
+    # Проверяем на NaN (float)
+    if isinstance(value, float):
+        import math
+        if math.isnan(value):
+            return default
+    
+    # Проверяем на None
+    if value is None:
+        return default
+    
+    # Если уже список
+    if isinstance(value, list):
+        return value
+    
+    # Все остальное - возвращаем default
+    return default
 
 def first_pass(intents: List[Dict]) -> Dict[str, Any]:
     """
@@ -37,11 +62,19 @@ def first_pass(intents: List[Dict]) -> Dict[str, Any]:
             intent_type=intent_type
         )
         
-        # Extract redirects
-        for answer in intent.get('answers', []):
-            for button in answer.get('buttons', []):
+        # Extract redirects - safely handle answers
+        answers = _safe_list(intent.get('answers', []))
+        for answer in answers:
+            if not isinstance(answer, dict):
+                continue
+            
+            buttons = _safe_list(answer.get('buttons', []))
+            for button in buttons:
+                if not isinstance(button, dict):
+                    continue
+                    
                 action = button.get('action', {})
-                if action.get('type') == 'REDIRECT_TO_INTENT':
+                if isinstance(action, dict) and action.get('type') == 'REDIRECT_TO_INTENT':
                     target_id = action.get('intent_id', '')
                     if target_id:
                         transitions.append(Transition(
@@ -77,7 +110,11 @@ def second_pass(intents: List[Dict], all_data: Dict) -> Dict:
     for intent in intents:
         intent_id = intent.get('intent_id', '')
         title = str(intent.get('title', '')).lower()
-        topics = [str(t).lower() for t in intent.get('topics', [])]
+        
+        # Безопасно получаем topics (может быть NaN/float)
+        topics_raw = intent.get('topics', [])
+        topics = [str(t).lower() for t in _safe_list(topics_raw)]
+        
         combined = f"{title} {' '.join(topics)}"
         
         # Find matching subtype
@@ -102,9 +139,10 @@ def third_pass(intents: List[Dict], all_data: Dict) -> Dict:
     
     for intent in intents:
         intent_id = intent.get('intent_id', '')
-        slot_ids = intent.get('slot_ids', [])
+        slot_ids_raw = intent.get('slot_ids', [])
+        slot_ids = _safe_list(slot_ids_raw)
         
-        if slot_ids and isinstance(slot_ids, list):
+        if slot_ids:
             slots_by_intent[intent_id] = slot_ids
     
     all_data['slots'] = dict(slots_by_intent)
