@@ -62,6 +62,13 @@ except ImportError:
     FRESHNESS_ANALYSIS_AVAILABLE = False
     print("⚠️  Freshness analysis module not available")
 
+try:
+    from utils.diagram_exporter import export_mermaid_graph
+    DIAGRAM_EXPORT_AVAILABLE = True
+except ImportError:
+    DIAGRAM_EXPORT_AVAILABLE = False
+    print("⚠️  Diagram export module not available")
+
 def print_section(title: str, width: int = 80):
     """Print formatted section header"""
     print("\n" + "="*width)
@@ -125,11 +132,12 @@ def main():
     all_data = second_pass(intents, all_data)
     all_data = third_pass(intents, all_data)
     all_data = fourth_pass(intents, all_data)
+    transitions = [(t.source_id, t.target_id) for t in all_data.get('transitions', [])]
     
     # 4. Graph structure analysis
     if GRAPH_ANALYSIS_AVAILABLE and ENABLE_VALIDATION:
         redirect_map = validation_results.get('redirects', {}).get('redirect_map', {})
-        graph_analysis = analyze_graph_structure(intents, redirect_map)
+        graph_analysis = analyze_graph_structure(intents, redirect_map, transitions)
         all_data['graph_analysis'] = graph_analysis
         validation_results['graph_analysis'] = graph_analysis
     
@@ -216,6 +224,18 @@ def main():
         # Store in all_data for diagram generation
         all_data['intent_risks'] = intent_risks
         all_data['quality_metrics'] = quality_metrics
+
+    # 6.1 Diagram export (Mermaid)
+    if EXPORT_DIAGRAMS and DIAGRAM_EXPORT_AVAILABLE:
+        diagram_path = os.path.join(OUTPUT_DIR, "graph.mmd")
+        export_mermaid_graph(
+            intents=intents,
+            transitions=transitions,
+            intent_risks=all_data.get('intent_risks'),
+            output_path=diagram_path,
+            include_legend=INCLUDE_LEGEND,
+        )
+        print(f"\n🖼️  Диаграмма Mermaid сохранена: {diagram_path}")
     
     # 7. Statistics
     print_section("📊 ЭТАП 6: Статистика")

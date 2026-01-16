@@ -7,6 +7,7 @@ Dialog Analyzer v5.1 ROBUST PARSING
 
 import os
 import sys
+import json
 
 # Добавляем текущую директорию в путь для импорта utils
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -15,6 +16,54 @@ from utils.config import *
 from utils.loaders import load_intents
 from utils.validators import run_all_validations, save_validation_report
 from utils.analyzers import first_pass, second_pass, third_pass, fourth_pass
+
+# Import graph analyzer
+try:
+    from utils.graph_analyzer import analyze_graph_structure
+    GRAPH_ANALYSIS_AVAILABLE = True
+except ImportError:
+    GRAPH_ANALYSIS_AVAILABLE = False
+    print("⚠️  Graph analysis module not available")
+
+# Import risk analyzer
+try:
+    from utils.risk_analyzer import (
+        analyze_intent_risks, generate_risk_summary,
+        generate_risk_legend, export_risk_report
+    )
+    RISK_ANALYSIS_AVAILABLE = True
+except ImportError:
+    RISK_ANALYSIS_AVAILABLE = False
+    print("⚠️  Risk analysis module not available")
+
+# Import quality analyzers
+try:
+    from utils.regex_analyzer import analyze_intent_regex_patterns
+    REGEX_ANALYSIS_AVAILABLE = True
+except ImportError:
+    REGEX_ANALYSIS_AVAILABLE = False
+    print("⚠️  Regex analysis module not available")
+
+try:
+    from utils.entry_point_analyzer import analyze_entry_points
+    ENTRY_POINT_ANALYSIS_AVAILABLE = True
+except ImportError:
+    ENTRY_POINT_ANALYSIS_AVAILABLE = False
+    print("⚠️  Entry point analysis module not available")
+
+try:
+    from utils.freshness_analyzer import analyze_data_freshness, get_update_distribution
+    FRESHNESS_ANALYSIS_AVAILABLE = True
+except ImportError:
+    FRESHNESS_ANALYSIS_AVAILABLE = False
+    print("⚠️  Freshness analysis module not available")
+
+try:
+    from utils.diagram_exporter import export_mermaid_graph
+    DIAGRAM_EXPORT_AVAILABLE = True
+except ImportError:
+    DIAGRAM_EXPORT_AVAILABLE = False
+    print("⚠️  Diagram export module not available")
 
 def print_header():
     """Печать красивого заголовка"""
@@ -25,6 +74,7 @@ def print_header():
     print("📜 Режим: Read-Only Analysis with Robust JSONL Parsing")
     print("🛡️  Данные не изменяются - только визуализация и метрики")
     print("🔧 НОВОЕ: Обработка невалидного JSONL (Extra data, multiple objects)")
+    print("📊 ВКЛЮЧЕНО: Риски, граф, метрики качества")
     print()
 
 def main():
@@ -107,6 +157,7 @@ def main():
         print(f"   Истёкших: {version_stats.get('expired', 0)}")
     
     # 2. Валидация
+    validation_results = {}
     if ENABLE_VALIDATION:
         print()
         print("=" * 80)
@@ -135,11 +186,110 @@ def main():
     all_data = second_pass(intents, all_data)
     all_data = third_pass(intents, all_data)
     all_data = fourth_pass(intents, all_data)
-    
-    # 4. Статистика
+    transitions = [(t.source_id, t.target_id) for t in all_data.get('transitions', [])]
+
+    # 4. Анализ графа
+    if GRAPH_ANALYSIS_AVAILABLE and ENABLE_VALIDATION:
+        redirect_map = validation_results.get('redirects', {}).get('redirect_map', {})
+        graph_analysis = analyze_graph_structure(intents, redirect_map, transitions)
+        all_data['graph_analysis'] = graph_analysis
+        validation_results['graph_analysis'] = graph_analysis
+
+    # 5. Метрики качества
+    quality_metrics = {}
     print()
     print("=" * 80)
-    print("📊 ЭТАП 4: Итоговая статистика")
+    print("📊 ЭТАП 4: Анализ качества данных")
+    print("=" * 80)
+
+    if REGEX_ANALYSIS_AVAILABLE:
+        regex_analysis = analyze_intent_regex_patterns(intents)
+        quality_metrics['regex_complexity'] = regex_analysis
+
+    if ENTRY_POINT_ANALYSIS_AVAILABLE:
+        entry_point_analysis = analyze_entry_points(intents)
+        quality_metrics['entry_points'] = entry_point_analysis
+
+    if FRESHNESS_ANALYSIS_AVAILABLE:
+        freshness_analysis = analyze_data_freshness(intents)
+        if freshness_analysis.get('has_version_data'):
+            update_dist = get_update_distribution(intents)
+            freshness_analysis['update_distribution'] = update_dist
+        quality_metrics['data_freshness'] = freshness_analysis
+
+    # 6. Анализ рисков
+    if RISK_ANALYSIS_AVAILABLE and ENABLE_VALIDATION:
+        print()
+        print("=" * 80)
+        print("🛡️  ЭТАП 5: Анализ рисков")
+        print("=" * 80)
+
+        intent_risks = analyze_intent_risks(intents, validation_results)
+        risk_summary = generate_risk_summary(intent_risks)
+
+        risk_score = risk_summary['risk_score']
+        if risk_score >= 80:
+            score_icon = "✅"
+        elif risk_score >= 60:
+            score_icon = "🟡"
+        elif risk_score >= 40:
+            score_icon = "🟠"
+        else:
+            score_icon = "🔴"
+
+        print(f"\n{score_icon} Общий рейтинг рисков: {risk_score}/100")
+
+        print(f"\n📊 Распределение по уровням риска:")
+        severity_dist = risk_summary['severity_distribution']
+        for severity in ['critical', 'high', 'medium', 'low', 'info']:
+            count = severity_dist.get(severity, 0)
+            if count > 0:
+                pct = round(count / risk_summary['total_intents'] * 100, 1)
+                print(f"   {severity.upper():10s}: {count:4d} ({pct}%)")
+
+        critical_intents = risk_summary['critical_intents']
+        if critical_intents:
+            print(f"\n❌ КРИТИЧЕСКИЕ ИНТЕНТЫ ({len(critical_intents)}):")
+            for intent_id in critical_intents[:5]:
+                risk_obj = intent_risks[intent_id]
+                print(f"   - {intent_id}")
+                for _, desc in risk_obj.risks[:2]:
+                    print(f"      • {desc}")
+            if len(critical_intents) > 5:
+                print(f"   ... и ещё {len(critical_intents) - 5}")
+
+        print(generate_risk_legend())
+
+        risk_report_path = os.path.join(OUTPUT_DIR, 'risk_analysis.json')
+        export_risk_report(intent_risks, risk_report_path)
+
+        if quality_metrics:
+            with open(risk_report_path, 'r', encoding='utf-8') as f:
+                report = json.load(f)
+            report['quality_metrics'] = quality_metrics
+            with open(risk_report_path, 'w', encoding='utf-8') as f:
+                json.dump(report, f, indent=2, ensure_ascii=False)
+            print(f"\n📊 Метрики качества добавлены в отчёт")
+
+        all_data['intent_risks'] = intent_risks
+        all_data['quality_metrics'] = quality_metrics
+
+    # 6.1 Diagram export (Mermaid)
+    if EXPORT_DIAGRAMS and DIAGRAM_EXPORT_AVAILABLE:
+        diagram_path = os.path.join(OUTPUT_DIR, "graph.mmd")
+        export_mermaid_graph(
+            intents=intents,
+            transitions=transitions,
+            intent_risks=all_data.get('intent_risks'),
+            output_path=diagram_path,
+            include_legend=INCLUDE_LEGEND,
+        )
+        print(f"\n🖼️  Диаграмма Mermaid сохранена: {diagram_path}")
+    
+    # 7. Статистика
+    print()
+    print("=" * 80)
+    print("📊 ЭТАП 6: Итоговая статистика")
     print("=" * 80)
     print(f"📦 Всего интентов: {len(intents)}")
     print(f"🔗 Переходов: {len(all_data.get('transitions', []))}")
@@ -180,6 +330,8 @@ def main():
     print(f"📁 Результаты сохранены в: {OUTPUT_DIR}/")
     if ENABLE_VALIDATION:
         print(f"📄 Отчёт валидации: {OUTPUT_DIR}/validation_report.json")
+    if RISK_ANALYSIS_AVAILABLE:
+        print(f"📄 Отчёт рисков: {OUTPUT_DIR}/risk_analysis.json")
     print()
     print("💡 Используйте полученные данные для оптимизации диалоговых потоков")
     print()
