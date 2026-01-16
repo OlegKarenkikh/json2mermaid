@@ -1,11 +1,12 @@
-# utils/diagram_exporter.py v5.2
-"""Diagram export utilities (Mermaid) with risk-based styling."""
+# utils/diagram_exporter.py v5.3
+"""Утилиты экспорта диаграмм (Mermaid) с риск-стилями."""
 
-from typing import Dict, Iterable, Optional, Tuple
+from typing import Dict, Iterable, Optional, Tuple, List
 import re
 
 from .risk_analyzer import RiskSeverity, IntentRisk
 from .visual_config import get_node_style, generate_legend_mermaid
+from .dataclasses import Transition
 
 
 def _sanitize_node_id(intent_id: str) -> str:
@@ -25,30 +26,50 @@ def _sanitize_label(text: str) -> str:
     text = text.replace('"', "'")
     
     # Удаление опасных символов для Mermaid
-    # Сохраняем только буквы, цифры, пробелы, пунктуацию
-    # Удаляем: [ ] { } ( ) < > \ | 
     dangerous_chars = r'[\[\]{}()<>\\|]'
     text = re.sub(dangerous_chars, '', text)
     
-    # Ограничение длины (чтобы диаграмма была читаемой)
-    if len(text) > 80:
-        text = text[:77] + "..."
+    # Ограничение длины
+    if len(text) > 60:
+        text = text[:57] + "..."
     
     return text.strip()
 
 
+def _get_arrow_style(transition_type: str) -> Tuple[str, str]:
+    """
+    Получить стиль стрелки для типа перехода.
+    Возвращает: (arrow_syntax, label)
+    """
+    styles = {
+        'button_redirect': ('-->', ''),
+        'direct_redirect': ('==>', 'direct'),
+        'conditional_redirect': ('-.->', 'if/else'),
+        'fallback': ('-..->', 'fallback'),
+        'answer_redirect': ('-->', 'answer'),
+        'intent_match': ('-->', 'match'),
+    }
+    
+    return styles.get(transition_type, ('-->', ''))
+
+
 def export_mermaid_graph(
     intents: Iterable[Dict],
-    transitions: Iterable[Tuple[str, str]],
+    transitions: Iterable[Transition],
     intent_risks: Optional[Dict[str, IntentRisk]],
     output_path: str,
     include_legend: bool = True,
+    max_nodes: int = 1000,
 ) -> None:
     """Экспорт диалогового графа в Mermaid с риск-стилями."""
     lines = ["flowchart TD"]
 
-    intent_list = list(intents)
+    intent_list = list(intents)[:max_nodes]
     intent_ids = {intent.get("intent_id") for intent in intent_list}
+    
+    # Информация о ограничении
+    if len(list(intents)) > max_nodes:
+        lines.append(f"  %% Showing first {max_nodes} of {len(list(intents))} intents")
 
     # Nodes
     for intent in intent_list:
@@ -61,19 +82,26 @@ def export_mermaid_graph(
         clean_title = _sanitize_label(title)
         
         # Формирование label
-        if clean_title:
-            label = f"{clean_id}<br/>{clean_title}"
+        if clean_title and len(clean_title) > 3:
+            label = f"{clean_title}"
         else:
             label = clean_id
         
         lines.append(f'  {node_id}["{label}"]')
 
-    # Edges
-    for source, target in transitions:
-        if source in intent_ids and target in intent_ids:
-            src_id = _sanitize_node_id(source)
-            tgt_id = _sanitize_node_id(target)
-            lines.append(f"  {src_id} --> {tgt_id}")
+    # Edges with styles
+    transition_list = [t for t in transitions if t.source_id in intent_ids and t.target_id in intent_ids]
+    
+    # Группировка по типам
+    for transition in transition_list[:5000]:  # Ограничение для больших графов
+        src_id = _sanitize_node_id(transition.source_id)
+        tgt_id = _sanitize_node_id(transition.target_id)
+        arrow, label = _get_arrow_style(transition.transition_type)
+        
+        if label:
+            lines.append(f"  {src_id} {arrow}|{label}| {tgt_id}")
+        else:
+            lines.append(f"  {src_id} {arrow} {tgt_id}")
 
     # Styles
     for intent in intent_list:
@@ -87,7 +115,25 @@ def export_mermaid_graph(
 
     if include_legend:
         lines.append("")
+        lines.append("%% Legend")
         lines.append(generate_legend_mermaid())
+        lines.append("")
+        lines.append("%% Transition Types:")
+        lines.append("%% --> button redirect")
+        lines.append("%% ==> direct redirect")
+        lines.append("%% -.-> conditional (if/else)")
+        lines.append("%% -..-> fallback")
+    
+    # Статистика
+    lines.append("")
+    lines.append(f"%% Total nodes: {len(intent_list)}")
+    lines.append(f"%% Total edges: {len(transition_list)}")
 
     with open(output_path, "w", encoding="utf-8") as f:
         f.write("\n".join(lines))
+    
+    print(f"\n📊 Статистика диаграммы:")
+    print(f"   Узлов: {len(intent_list)}")
+    print(f"   Рёбер: {len(transition_list)}")
+    if len(list(intents)) > max_nodes:
+        print(f"   ⚠️  Показаны первые {max_nodes} из {len(list(intents))} интентов")
