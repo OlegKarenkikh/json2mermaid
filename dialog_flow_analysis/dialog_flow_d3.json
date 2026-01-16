@@ -1,0 +1,26 @@
+{
+  "nodes": [
+    {
+      "id": "1",
+      "label": "Greeting",
+      "group": "cc_regexp_main",
+      "color": "#4CAF50",
+      "is_external": false
+    },
+    {
+      "id": "2",
+      "label": "Help",
+      "group": "cc_match",
+      "color": "#2196F3",
+      "is_external": false
+    },
+    {
+      "id": "3",
+      "label": "Exit",
+      "group": "cc_match",
+      "color": "#2196F3",
+      "is_external": false
+    }
+  ],
+  "links": []
+}

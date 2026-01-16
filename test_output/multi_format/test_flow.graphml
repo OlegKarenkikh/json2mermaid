@@ -1,0 +1,161 @@
+<?xml version='1.0' encoding='utf-8'?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <key id="d0" for="node" attr.name="title" attr.type="string" />
+  <key id="d1" for="node" attr.name="record_type" attr.type="string" />
+  <key id="d2" for="node" attr.name="is_external" attr.type="boolean" />
+  <key id="d3" for="node" attr.name="color" attr.type="string" />
+  <key id="d4" for="edge" attr.name="transition_type" attr.type="string" />
+  <key id="d5" for="edge" attr.name="condition" attr.type="string" />
+  <key id="d6" for="edge" attr.name="color" attr.type="string" />
+  <graph id="G" edgedefault="directed">
+    <node id="8aeb7ad2-4d1a-4727-a923-f136def8a21a">
+      <data key="d0">Главный интент. Внести изменения в полис. Уточнение вида страхования. RegExp</data>
+      <data key="d1">cc_regexp_main</data>
+      <data key="d2">false</data>
+      <data key="d3">#4CAF50</data>
+    </node>
+    <node id="ccNeedChangeOther">
+      <data key="d0">ccNeedChangeOther</data>
+      <data key="d1">external</data>
+      <data key="d2">true</data>
+      <data key="d3">#FFC107</data>
+    </node>
+    <node id="ccConsultationAutoOsagoChange">
+      <data key="d0">ccConsultationAutoOsagoChange</data>
+      <data key="d1">external</data>
+      <data key="d2">true</data>
+      <data key="d3">#FFC107</data>
+    </node>
+    <node id="ccPolicyChangeAndProlong">
+      <data key="d0">ccPolicyChangeAndProlong</data>
+      <data key="d1">external</data>
+      <data key="d2">true</data>
+      <data key="d3">#FFC107</data>
+    </node>
+    <node id="ccOTMKASKOAQF">
+      <data key="d0">ccOTMKASKOAQF</data>
+      <data key="d1">external</data>
+      <data key="d2">true</data>
+      <data key="d3">#FFC107</data>
+    </node>
+    <node id="ccIFLChangePolis">
+      <data key="d0">ccIFLChangePolis</data>
+      <data key="d1">external</data>
+      <data key="d2">true</data>
+      <data key="d3">#FFC107</data>
+    </node>
+    <node id="cc_travel_change_1">
+      <data key="d0">cc_travel_change_1</data>
+      <data key="d1">external</data>
+      <data key="d2">true</data>
+      <data key="d3">#FFC107</data>
+    </node>
+    <node id="kc_Gen_Int_NeedChange_DMS">
+      <data key="d0">kc_Gen_Int_NeedChange_DMS</data>
+      <data key="d1">external</data>
+      <data key="d2">true</data>
+      <data key="d3">#FFC107</data>
+    </node>
+    <node id="ccMortgageChanges">
+      <data key="d0">ccMortgageChanges</data>
+      <data key="d1">external</data>
+      <data key="d2">true</data>
+      <data key="d3">#FFC107</data>
+    </node>
+    <edge id="e0" source="8aeb7ad2-4d1a-4727-a923-f136def8a21a" target="ccConsultationAutoOsagoChange">
+      <data key="d4">button_action</data>
+      <data key="d5">button: ОСАГО</data>
+      <data key="d6">#1976D2</data>
+    </edge>
+    <edge id="e1" source="8aeb7ad2-4d1a-4727-a923-f136def8a21a" target="ccOTMKASKOAQF">
+      <data key="d4">button_action</data>
+      <data key="d5">button: Каско</data>
+      <data key="d6">#1976D2</data>
+    </edge>
+    <edge id="e2" source="8aeb7ad2-4d1a-4727-a923-f136def8a21a" target="ccMortgageChanges">
+      <data key="d4">button_action</data>
+      <data key="d5">button: Ипотечное страхование</data>
+      <data key="d6">#1976D2</data>
+    </edge>
+    <edge id="e3" source="8aeb7ad2-4d1a-4727-a923-f136def8a21a" target="ccIFLChangePolis">
+      <data key="d4">button_action</data>
+      <data key="d5">button: Страхование имущества</data>
+      <data key="d6">#1976D2</data>
+    </edge>
+    <edge id="e4" source="8aeb7ad2-4d1a-4727-a923-f136def8a21a" target="cc_travel_change_1">
+      <data key="d4">button_action</data>
+      <data key="d5">button: Путешествия</data>
+      <data key="d6">#1976D2</data>
+    </edge>
+    <edge id="e5" source="8aeb7ad2-4d1a-4727-a923-f136def8a21a" target="kc_Gen_Int_NeedChange_DMS">
+      <data key="d4">button_action</data>
+      <data key="d5">button: ДМС</data>
+      <data key="d6">#1976D2</data>
+    </edge>
+    <edge id="e6" source="8aeb7ad2-4d1a-4727-a923-f136def8a21a" target="ccNeedChangeOther">
+      <data key="d4">button_action</data>
+      <data key="d5">button: Другое</data>
+      <data key="d6">#1976D2</data>
+    </edge>
+    <edge id="e7" source="8aeb7ad2-4d1a-4727-a923-f136def8a21a" target="ccConsultationAutoOsagoChange">
+      <data key="d4">action_redirect</data>
+      <data key="d5">action: ОСАГО</data>
+      <data key="d6">#1976D2</data>
+    </edge>
+    <edge id="e8" source="8aeb7ad2-4d1a-4727-a923-f136def8a21a" target="ccOTMKASKOAQF">
+      <data key="d4">action_redirect</data>
+      <data key="d5">action: Каско</data>
+      <data key="d6">#1976D2</data>
+    </edge>
+    <edge id="e9" source="8aeb7ad2-4d1a-4727-a923-f136def8a21a" target="ccMortgageChanges">
+      <data key="d4">action_redirect</data>
+      <data key="d5">action: Ипотечное страхование</data>
+      <data key="d6">#1976D2</data>
+    </edge>
+    <edge id="e10" source="8aeb7ad2-4d1a-4727-a923-f136def8a21a" target="ccIFLChangePolis">
+      <data key="d4">action_redirect</data>
+      <data key="d5">action: Страхование имущества</data>
+      <data key="d6">#1976D2</data>
+    </edge>
+    <edge id="e11" source="8aeb7ad2-4d1a-4727-a923-f136def8a21a" target="cc_travel_change_1">
+      <data key="d4">action_redirect</data>
+      <data key="d5">action: Путешествия</data>
+      <data key="d6">#1976D2</data>
+    </edge>
+    <edge id="e12" source="8aeb7ad2-4d1a-4727-a923-f136def8a21a" target="kc_Gen_Int_NeedChange_DMS">
+      <data key="d4">action_redirect</data>
+      <data key="d5">action: ДМС</data>
+      <data key="d6">#1976D2</data>
+    </edge>
+    <edge id="e13" source="8aeb7ad2-4d1a-4727-a923-f136def8a21a" target="ccNeedChangeOther">
+      <data key="d4">action_redirect</data>
+      <data key="d5">action: Другое</data>
+      <data key="d6">#1976D2</data>
+    </edge>
+    <edge id="e14" source="8aeb7ad2-4d1a-4727-a923-f136def8a21a" target="ccConsultationAutoOsagoChange">
+      <data key="d4">text_redirect</data>
+      <data key="d5">client_identification=Идентифицирован AND profile_client_product=__FILLED__ AND MainPolis=ОСАГО</data>
+      <data key="d6">#4CAF50</data>
+    </edge>
+    <edge id="e15" source="8aeb7ad2-4d1a-4727-a923-f136def8a21a" target="ccOTMKASKOAQF">
+      <data key="d4">text_redirect</data>
+      <data key="d5">client_identification=Идентифицирован AND profile_client_product=__FILLED__ AND MainPolis=КАСКО</data>
+      <data key="d6">#4CAF50</data>
+    </edge>
+    <edge id="e16" source="8aeb7ad2-4d1a-4727-a923-f136def8a21a" target="ccConsultationAutoOsagoChange">
+      <data key="d4">text_redirect</data>
+      <data key="d5">ner_polis=ОСАГО</data>
+      <data key="d6">#4CAF50</data>
+    </edge>
+    <edge id="e17" source="8aeb7ad2-4d1a-4727-a923-f136def8a21a" target="ccOTMKASKOAQF">
+      <data key="d4">text_redirect</data>
+      <data key="d5">ner_polis=КАСКО</data>
+      <data key="d6">#4CAF50</data>
+    </edge>
+    <edge id="e18" source="8aeb7ad2-4d1a-4727-a923-f136def8a21a" target="ccPolicyChangeAndProlong">
+      <data key="d4">text_redirect</data>
+      <data key="d5">ner_intention_prolong=Продлить</data>
+      <data key="d6">#4CAF50</data>
+    </edge>
+  </graph>
+</graphml>

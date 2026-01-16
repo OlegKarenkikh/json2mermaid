@@ -1,0 +1,37 @@
+{
+  "elements": [
+    {
+      "data": {
+        "id": "1",
+        "label": "Greeting",
+        "title": "Greeting",
+        "record_type": "cc_regexp_main",
+        "is_external": false,
+        "color": "#4CAF50",
+        "borderColor": "#2E7D32"
+      }
+    },
+    {
+      "data": {
+        "id": "2",
+        "label": "Help",
+        "title": "Help",
+        "record_type": "cc_match",
+        "is_external": false,
+        "color": "#2196F3",
+        "borderColor": "#1565C0"
+      }
+    },
+    {
+      "data": {
+        "id": "3",
+        "label": "Exit",
+        "title": "Exit",
+        "record_type": "cc_match",
+        "is_external": false,
+        "color": "#2196F3",
+        "borderColor": "#1565C0"
+      }
+    }
+  ]
+}

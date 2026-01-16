@@ -1,0 +1,49 @@
+digraph "DialogFlow" {
+    rankdir=TB;
+    node [shape=box, style="rounded,filled", fontname="Arial", fontsize=10];
+    edge [fontname="Arial", fontsize=8];
+    graph [fontname="Arial", splines=true, overlap=false];
+
+    subgraph cluster_0 {
+        label="cc_regexp_main";
+        style=rounded;
+        color="#BDBDBD";
+
+        n_1 [
+            label="Greeting"
+            fillcolor="#4CAF50"
+            color="#2E7D32"
+            tooltip="1"
+        ];
+    }
+
+    subgraph cluster_1 {
+        label="cc_match";
+        style=rounded;
+        color="#BDBDBD";
+
+        n_2 [
+            label="Help"
+            fillcolor="#2196F3"
+            color="#1565C0"
+            tooltip="2"
+        ];
+        n_3 [
+            label="Exit"
+            fillcolor="#2196F3"
+            color="#1565C0"
+            tooltip="3"
+        ];
+    }
+
+    // Edges
+
+    // Legend
+    subgraph cluster_legend {
+        label="Legend";
+        style=rounded;
+        legend_main [label="Main Intent" fillcolor="#4CAF50" color="#2E7D32"];
+        legend_match [label="Match Intent" fillcolor="#2196F3" color="#1565C0"];
+        legend_external [label="External Target" fillcolor="#FFC107" color="#F57C00" shape=ellipse];
+    }
+}

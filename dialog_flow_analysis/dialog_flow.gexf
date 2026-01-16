@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gexf xmlns="http://www.gexf.net/1.2draft" version="1.2">
+  <meta lastmodifieddate="2024-01-01">
+    <creator>json2mermaid</creator>
+    <description>Dialog Flow Graph</description>
+  </meta>
+  <graph mode="static" defaultedgetype="directed">
+    <attributes class="node">
+      <attribute id="0" title="record_type" type="string"/>
+      <attribute id="1" title="is_external" type="boolean"/>
+    </attributes>
+    <attributes class="edge">
+      <attribute id="0" title="transition_type" type="string"/>
+      <attribute id="1" title="condition" type="string"/>
+    </attributes>
+    <nodes>
+      <node id="1" label="Greeting">
+        <attvalues>
+          <attvalue for="0" value="cc_regexp_main"/>
+          <attvalue for="1" value="false"/>
+        </attvalues>
+        <viz:color r="76" g="175" b="80" xmlns:viz="http://www.gexf.net/1.2draft/viz"/>
+      </node>
+      <node id="2" label="Help">
+        <attvalues>
+          <attvalue for="0" value="cc_match"/>
+          <attvalue for="1" value="false"/>
+        </attvalues>
+        <viz:color r="33" g="150" b="243" xmlns:viz="http://www.gexf.net/1.2draft/viz"/>
+      </node>
+      <node id="3" label="Exit">
+        <attvalues>
+          <attvalue for="0" value="cc_match"/>
+          <attvalue for="1" value="false"/>
+        </attvalues>
+        <viz:color r="33" g="150" b="243" xmlns:viz="http://www.gexf.net/1.2draft/viz"/>
+      </node>
+    </nodes>
+    <edges>
+    </edges>
+  </graph>
+</gexf>

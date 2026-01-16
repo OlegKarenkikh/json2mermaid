@@ -1,0 +1,183 @@
+{
+  "nodes": [
+    {
+      "id": "8aeb7ad2-4d1a-4727-a923-f136def8a21a",
+      "label": "Главный интент. Внести изменения в по...",
+      "group": "cc_regexp_main",
+      "color": "#4CAF50",
+      "is_external": false
+    },
+    {
+      "id": "ccNeedChangeOther",
+      "label": "ccNeedChangeOther",
+      "group": "external",
+      "color": "#FFC107",
+      "is_external": true
+    },
+    {
+      "id": "ccConsultationAutoOsagoChange",
+      "label": "ccConsultationAutoOsagoChange",
+      "group": "external",
+      "color": "#FFC107",
+      "is_external": true
+    },
+    {
+      "id": "ccPolicyChangeAndProlong",
+      "label": "ccPolicyChangeAndProlong",
+      "group": "external",
+      "color": "#FFC107",
+      "is_external": true
+    },
+    {
+      "id": "ccOTMKASKOAQF",
+      "label": "ccOTMKASKOAQF",
+      "group": "external",
+      "color": "#FFC107",
+      "is_external": true
+    },
+    {
+      "id": "ccIFLChangePolis",
+      "label": "ccIFLChangePolis",
+      "group": "external",
+      "color": "#FFC107",
+      "is_external": true
+    },
+    {
+      "id": "cc_travel_change_1",
+      "label": "cc_travel_change_1",
+      "group": "external",
+      "color": "#FFC107",
+      "is_external": true
+    },
+    {
+      "id": "kc_Gen_Int_NeedChange_DMS",
+      "label": "kc_Gen_Int_NeedChange_DMS",
+      "group": "external",
+      "color": "#FFC107",
+      "is_external": true
+    },
+    {
+      "id": "ccMortgageChanges",
+      "label": "ccMortgageChanges",
+      "group": "external",
+      "color": "#FFC107",
+      "is_external": true
+    }
+  ],
+  "links": [
+    {
+      "source": "8aeb7ad2-4d1a-4727-a923-f136def8a21a",
+      "target": "ccConsultationAutoOsagoChange",
+      "type": "button_action",
+      "color": "#1976D2"
+    },
+    {
+      "source": "8aeb7ad2-4d1a-4727-a923-f136def8a21a",
+      "target": "ccOTMKASKOAQF",
+      "type": "button_action",
+      "color": "#1976D2"
+    },
+    {
+      "source": "8aeb7ad2-4d1a-4727-a923-f136def8a21a",
+      "target": "ccMortgageChanges",
+      "type": "button_action",
+      "color": "#1976D2"
+    },
+    {
+      "source": "8aeb7ad2-4d1a-4727-a923-f136def8a21a",
+      "target": "ccIFLChangePolis",
+      "type": "button_action",
+      "color": "#1976D2"
+    },
+    {
+      "source": "8aeb7ad2-4d1a-4727-a923-f136def8a21a",
+      "target": "cc_travel_change_1",
+      "type": "button_action",
+      "color": "#1976D2"
+    },
+    {
+      "source": "8aeb7ad2-4d1a-4727-a923-f136def8a21a",
+      "target": "kc_Gen_Int_NeedChange_DMS",
+      "type": "button_action",
+      "color": "#1976D2"
+    },
+    {
+      "source": "8aeb7ad2-4d1a-4727-a923-f136def8a21a",
+      "target": "ccNeedChangeOther",
+      "type": "button_action",
+      "color": "#1976D2"
+    },
+    {
+      "source": "8aeb7ad2-4d1a-4727-a923-f136def8a21a",
+      "target": "ccConsultationAutoOsagoChange",
+      "type": "action_redirect",
+      "color": "#1976D2"
+    },
+    {
+      "source": "8aeb7ad2-4d1a-4727-a923-f136def8a21a",
+      "target": "ccOTMKASKOAQF",
+      "type": "action_redirect",
+      "color": "#1976D2"
+    },
+    {
+      "source": "8aeb7ad2-4d1a-4727-a923-f136def8a21a",
+      "target": "ccMortgageChanges",
+      "type": "action_redirect",
+      "color": "#1976D2"
+    },
+    {
+      "source": "8aeb7ad2-4d1a-4727-a923-f136def8a21a",
+      "target": "ccIFLChangePolis",
+      "type": "action_redirect",
+      "color": "#1976D2"
+    },
+    {
+      "source": "8aeb7ad2-4d1a-4727-a923-f136def8a21a",
+      "target": "cc_travel_change_1",
+      "type": "action_redirect",
+      "color": "#1976D2"
+    },
+    {
+      "source": "8aeb7ad2-4d1a-4727-a923-f136def8a21a",
+      "target": "kc_Gen_Int_NeedChange_DMS",
+      "type": "action_redirect",
+      "color": "#1976D2"
+    },
+    {
+      "source": "8aeb7ad2-4d1a-4727-a923-f136def8a21a",
+      "target": "ccNeedChangeOther",
+      "type": "action_redirect",
+      "color": "#1976D2"
+    },
+    {
+      "source": "8aeb7ad2-4d1a-4727-a923-f136def8a21a",
+      "target": "ccConsultationAutoOsagoChange",
+      "type": "text_redirect",
+      "color": "#4CAF50"
+    },
+    {
+      "source": "8aeb7ad2-4d1a-4727-a923-f136def8a21a",
+      "target": "ccOTMKASKOAQF",
+      "type": "text_redirect",
+      "color": "#4CAF50"
+    },
+    {
+      "source": "8aeb7ad2-4d1a-4727-a923-f136def8a21a",
+      "target": "ccConsultationAutoOsagoChange",
+      "type": "text_redirect",
+      "color": "#4CAF50"
+    },
+    {
+      "source": "8aeb7ad2-4d1a-4727-a923-f136def8a21a",
+      "target": "ccOTMKASKOAQF",
+      "type": "text_redirect",
+      "color": "#4CAF50"
+    },
+    {
+      "source": "8aeb7ad2-4d1a-4727-a923-f136def8a21a",
+      "target": "ccPolicyChangeAndProlong",
+      "type": "text_redirect",
+      "color": "#4CAF50"
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='utf-8'?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <key id="d0" for="node" attr.name="title" attr.type="string" />
+  <key id="d1" for="node" attr.name="record_type" attr.type="string" />
+  <key id="d2" for="node" attr.name="is_external" attr.type="boolean" />
+  <key id="d3" for="node" attr.name="color" attr.type="string" />
+  <key id="d4" for="edge" attr.name="transition_type" attr.type="string" />
+  <key id="d5" for="edge" attr.name="condition" attr.type="string" />
+  <key id="d6" for="edge" attr.name="color" attr.type="string" />
+  <graph id="G" edgedefault="directed">
+    <node id="1">
+      <data key="d0">Greeting</data>
+      <data key="d1">cc_regexp_main</data>
+      <data key="d2">false</data>
+      <data key="d3">#4CAF50</data>
+    </node>
+    <node id="2">
+      <data key="d0">Help</data>
+      <data key="d1">cc_match</data>
+      <data key="d2">false</data>
+      <data key="d3">#2196F3</data>
+    </node>
+    <node id="3">
+      <data key="d0">Exit</data>
+      <data key="d1">cc_match</data>
+      <data key="d2">false</data>
+      <data key="d3">#2196F3</data>
+    </node>
+  </graph>
+</graphml>
