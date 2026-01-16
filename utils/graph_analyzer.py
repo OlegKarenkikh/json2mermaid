@@ -1,10 +1,14 @@
 # utils/graph_analyzer.py v5.1
 """Graph analysis module for dialog flow structure"""
 
-from typing import Dict, List, Set, Tuple, Any
+from typing import Dict, List, Set, Tuple, Any, Optional, Iterable
 from collections import defaultdict, deque
 
-def build_graph(intents: List[Dict], redirect_map: Dict[str, List[str]]) -> Dict[str, Any]:
+def build_graph(
+    intents: List[Dict],
+    redirect_map: Dict[str, List[str]],
+    transitions: Optional[Iterable[Tuple[str, str]]] = None,
+) -> Dict[str, Any]:
     """Build directed graph from intents and redirects"""
     graph = {
         'nodes': set(),
@@ -31,11 +35,21 @@ def build_graph(intents: List[Dict], redirect_map: Dict[str, List[str]]) -> Dict
         if record_type == 'cc_regexp_main' and len(intent.get('inputs', [])) > 0:
             graph['entry_points'].append(intent_id)
     
+    edge_set = set()
+
     # Build edges from redirect_map
     for source, targets in redirect_map.items():
         for target in targets:
             if target in graph['nodes']:
-                graph['edges'].append((source, target))
+                edge_set.add((source, target))
+
+    # Add edges from extracted transitions
+    if transitions:
+        for source, target in transitions:
+            if source in graph['nodes'] and target in graph['nodes']:
+                edge_set.add((source, target))
+
+    graph['edges'] = list(edge_set)
     
     # Find dead ends (nodes with no outgoing edges)
     nodes_with_outgoing = {src for src, _ in graph['edges']}
@@ -108,14 +122,18 @@ def find_isolated_subgraphs(graph: Dict[str, Any]) -> List[Set[str]]:
     
     return components
 
-def analyze_graph_structure(intents: List[Dict], redirect_map: Dict[str, List[str]]) -> Dict[str, Any]:
+def analyze_graph_structure(
+    intents: List[Dict],
+    redirect_map: Dict[str, List[str]],
+    transitions: Optional[Iterable[Tuple[str, str]]] = None,
+) -> Dict[str, Any]:
     """Comprehensive graph structure analysis"""
     print("\n" + "="*80)
     print("📊 АНАЛИЗ СТРУКТУРЫ ГРАФА")
     print("="*80)
     
     # Build graph
-    graph = build_graph(intents, redirect_map)
+    graph = build_graph(intents, redirect_map, transitions)
     
     print(f"\n[1/3] Базовая структура:")
     print(f"   Узлов: {len(graph['nodes'])}")
