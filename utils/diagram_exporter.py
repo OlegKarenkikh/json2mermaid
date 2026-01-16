@@ -1,22 +1,53 @@
-# utils/diagram_exporter.py v5.4
+# utils/diagram_exporter.py v5.5
 """Утилиты экспорта диаграмм (Mermaid) с риск-стилями и полной логикой."""
 
 from typing import Dict, Iterable, Optional, Tuple, List, Any
 import re
+import math
 
 from .risk_analyzer import RiskSeverity, IntentRisk
 from .visual_config import get_node_style, generate_legend_mermaid
 from .dataclasses import Transition
 
 
-def _sanitize_node_id(intent_id: str) -> str:
+def _safe_str(value: Any, default: str = '') -> str:
+    """
+    Безопасное преобразование в строку.
+    Обрабатывает NaN, None, float и другие невалидные значения.
+    """
+    if value is None:
+        return default
+    
+    # Проверяем на NaN (float)
+    if isinstance(value, float):
+        if math.isnan(value):
+            return default
+        return str(value)
+    
+    # Для строк - просто возвращаем
+    if isinstance(value, str):
+        return value
+    
+    # Все остальное - преобразуем в строку
+    try:
+        return str(value)
+    except Exception:
+        return default
+
+
+def _sanitize_node_id(intent_id: Any) -> str:
     """Очистка node id для Mermaid."""
+    # Сначала преобразуем в безопасную строку
+    intent_id_str = _safe_str(intent_id, 'unknown')
+    if not intent_id_str:
+        intent_id_str = 'unknown'
+    
     # Заменяем все неалфавитные символы на _
-    sanitized = re.sub(r'[^a-zA-Z0-9_]', '_', intent_id)
+    sanitized = re.sub(r'[^a-zA-Z0-9_]', '_', intent_id_str)
     # Убеждаемся что не начинается с цифры
     if sanitized and sanitized[0].isdigit():
         sanitized = 'n_' + sanitized
-    return sanitized
+    return sanitized if sanitized else 'unknown'
 
 
 def _sanitize_label(text: str, max_len: int = 60) -> str:
@@ -203,7 +234,7 @@ def export_detailed_flow_diagram(
     
     # Сначала собираем все intent_id
     for intent in intent_list:
-        intent_id = intent.get('intent_id', '')
+        intent_id = _safe_str(intent.get('intent_id', ''), '')
         if intent_id:
             all_node_ids.add(intent_id)
     
@@ -212,10 +243,10 @@ def export_detailed_flow_diagram(
         intent_id = flow['intent_id']
         node_id = _sanitize_node_id(intent_id)
         title = _sanitize_label(flow['title'], 50)
-        record_type = flow.get('record_type', '')
+        record_type = _safe_str(flow.get('record_type', ''), '').lower()
         
         # Определяем форму узла в зависимости от типа
-        if 'main' in record_type.lower() or 'regexp' in record_type.lower():
+        if 'main' in record_type or 'regexp' in record_type:
             # Главный интент - прямоугольник с закругленными углами
             node_shape = f'{node_id}(["{title}"])'
         else:
@@ -318,9 +349,9 @@ def export_detailed_flow_diagram(
     for intent in intent_list:
         intent_id = intent.get('intent_id', '')
         node_id = _sanitize_node_id(intent_id)
-        record_type = intent.get('record_type', '')
+        record_type = _safe_str(intent.get('record_type', ''), '').lower()
         
-        if 'main' in record_type.lower() or 'regexp' in record_type.lower():
+        if 'main' in record_type or 'regexp' in record_type:
             lines.append(f"    style {node_id} fill:#4CAF50,stroke:#2E7D32,color:#fff")
         else:
             lines.append(f"    style {node_id} fill:#2196F3,stroke:#1565C0,color:#fff")

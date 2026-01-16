@@ -154,6 +154,68 @@ def test_diagram_generation():
     return os.path.exists('test_output/detailed_flow.mmd') and os.path.exists('test_output/intent_flow.mmd')
 
 
+def test_nan_handling():
+    """Test that NaN values in record_type and other fields are handled correctly."""
+    print("\n" + "=" * 80)
+    print("🧪 TEST 4: NaN/Float Handling")
+    print("=" * 80)
+    
+    # Create test data with NaN values
+    test_intents = [
+        {
+            "intent_id": "test-nan-1",
+            "title": "Test with NaN",
+            "record_type": float('nan'),  # NaN value
+            "answers": [{"answer": "Hello"}],
+            "inputs": []
+        },
+        {
+            "intent_id": "test-nan-2", 
+            "title": float('nan'),  # NaN title
+            "record_type": "cc_match",
+            "answers": [],
+            "inputs": []
+        },
+        {
+            "intent_id": float('nan'),  # NaN intent_id
+            "title": "Test",
+            "record_type": None,  # None value
+            "answers": [],
+            "inputs": []
+        }
+    ]
+    
+    os.makedirs('test_output', exist_ok=True)
+    
+    try:
+        # Test detailed flow diagram
+        print("\n📊 Testing detailed flow diagram with NaN values...")
+        export_detailed_flow_diagram(
+            intents=test_intents,
+            output_path='test_output/nan_test.mmd',
+            show_slot_conditions=True,
+            show_buttons=True,
+            show_regex=True
+        )
+        print("✅ Detailed flow diagram generated successfully")
+        
+        # Verify file was created
+        if os.path.exists('test_output/nan_test.mmd'):
+            with open('test_output/nan_test.mmd', 'r') as f:
+                content = f.read()
+                print(f"✅ File created with {len(content)} characters")
+            return True
+        else:
+            print("❌ File was not created")
+            return False
+            
+    except Exception as e:
+        print(f"❌ Error: {e}")
+        import traceback
+        traceback.print_exc()
+        return False
+
+
 def main():
     """Run all tests."""
     print("\n" + "=" * 80)
@@ -164,6 +226,7 @@ def main():
         ("Transition Extraction", test_transition_extraction),
         ("Detailed Flow Extraction", test_detailed_flow_extraction),
         ("Diagram Generation", test_diagram_generation),
+        ("NaN/Float Handling", test_nan_handling),
     ]
     
     results = []
