@@ -1,7 +1,7 @@
 # utils/risk_analyzer.py v5.1
 """Risk analysis and visual indication system"""
 
-from typing import Dict, List, Any, Tuple
+from typing import Dict, List, Any, Tuple, Optional
 from collections import defaultdict
 from enum import Enum
 
@@ -35,6 +35,39 @@ RISK_COLORS = {
     RiskSeverity.LOW: "#88CCFF",       # Голубой
     RiskSeverity.INFO: "#CCCCCC",      # Серый
 }
+
+# Helper functions for NaN detection
+def _is_nan_or_empty(value: Any) -> bool:
+    """
+    Проверяет, является ли значение NaN, None или пустым.
+    Используется для обязательных полей.
+    """
+    if value is None:
+        return True
+    if isinstance(value, float):
+        import math
+        if math.isnan(value):
+            return True
+    if isinstance(value, str):
+        if value.upper() in ('NAN', 'NONE', 'NULL', ''):
+            return True
+    return False
+
+def _is_explicit_nan(value: Any) -> bool:
+    """
+    Проверяет, является ли значение явным NaN (float nan или строка 'NaN').
+    Используется для опциональных полей - None для них допустим.
+    """
+    if value is None:
+        return False  # None допустим для опциональных полей
+    if isinstance(value, float):
+        import math
+        if math.isnan(value):
+            return True
+    if isinstance(value, str):
+        if value.upper() == 'NAN':
+            return True
+    return False
 
 # Risk severity mapping
 RISK_SEVERITY_MAP = {
@@ -118,27 +151,34 @@ def analyze_intent_risks(intents: List[Dict], validation_results: Dict) -> Dict[
                 )
     
     # 3. NaN values
+    # Определяем обязательные и опциональные поля
+    required_fields = ['record_type']  # Обязательные поля
+    optional_fields = ['intent_settings', 'routing_params', 'topics']  # Опциональные поля
+    
     for intent in intents:
         intent_id = intent.get('intent_id', 'unknown')
         
-        # Check record_type
-        if not intent.get('record_type') or str(intent.get('record_type')).upper() == 'NAN':
+        # Проверяем обязательное поле record_type
+        record_type = intent.get('record_type')
+        if _is_nan_or_empty(record_type):
             risks[intent_id].add_risk(
                 RiskType.MISSING_RECORD_TYPE,
-                "record_type is NaN or missing"
+                "record_type is NaN or missing (обязательное поле)"
             )
         
-        # Check other NaN fields
+        # Проверяем опциональные поля на явные NaN значения (но не на None)
+        # None для опциональных полей - это нормально
         nan_fields = []
-        for field in ['intent_settings', 'routing_params', 'topics']:
+        for field in optional_fields:
             value = intent.get(field)
-            if value is None or (isinstance(value, float) and str(value) == 'nan'):
+            # Проверяем только явные NaN (float nan или строка 'NaN'), но не None
+            if _is_explicit_nan(value):
                 nan_fields.append(field)
         
         if nan_fields:
             risks[intent_id].add_risk(
                 RiskType.NAN_VALUE,
-                f"NaN values in: {', '.join(nan_fields)}"
+                f"Явные NaN значения в: {', '.join(nan_fields)}"
             )
     
     # 4. Empty answers/inputs
