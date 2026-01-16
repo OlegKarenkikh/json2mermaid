@@ -33,15 +33,39 @@ def _safe_list(value: Any, default: List = None) -> List:
 
 def _extract_redirect_from_text(answer_text: str) -> List[str]:
     """
-    Извлекает REDIRECT_TO_INTENT из текста ответа
-    Паттерн: REDIRECT_TO_INTENT <intent_id>
+    Извлекает различные команды редиректа из текста ответа.
+    Поддерживаемые форматы:
+    - REDIRECT_TO_INTENT <intent_id>
+    - GOTO <intent_id>
+    - JUMP_TO <intent_id>
+    - /goto <intent_id>
     """
     if not answer_text:
         return []
     
-    pattern = r'REDIRECT_TO_INTENT\s+(\S+)'
-    matches = re.findall(pattern, answer_text)
-    return matches
+    redirects = []
+    
+    # REDIRECT_TO_INTENT command
+    pattern1 = r'REDIRECT_TO_INTENT\s+(\S+)'
+    redirects.extend(re.findall(pattern1, answer_text))
+    
+    # GOTO command
+    pattern2 = r'(?:^|\s)GOTO\s+(\S+)'
+    redirects.extend(re.findall(pattern2, answer_text, re.IGNORECASE))
+    
+    # JUMP_TO command
+    pattern3 = r'JUMP_TO\s+(\S+)'
+    redirects.extend(re.findall(pattern3, answer_text, re.IGNORECASE))
+    
+    # /goto command (slash command)
+    pattern4 = r'/goto\s+(\S+)'
+    redirects.extend(re.findall(pattern4, answer_text, re.IGNORECASE))
+    
+    # CALL_INTENT
+    pattern5 = r'CALL_INTENT\s+(\S+)'
+    redirects.extend(re.findall(pattern5, answer_text, re.IGNORECASE))
+    
+    return redirects
 
 
 def _extract_buttons_from_markdown(answer_text: str) -> List[Dict[str, str]]:
@@ -262,6 +286,84 @@ def _safe_str(value: Any, default: str = '') -> str:
         return str(value)
     except Exception:
         return default
+
+
+def build_intent_mappings(intents: List[Dict]) -> Dict[str, Dict]:
+    """
+    Строит маппинги для разрешения связей между интентами.
+    
+    Returns:
+        {
+            'by_intent_id': {intent_id: intent},
+            'by_symbol_code': {symbol_code: intent},
+            'by_action_id': {action_id: intent},
+            'symbol_to_intent': {symbol_code: intent_id},
+            'action_to_intent': {action_id: intent_id},
+        }
+    """
+    mappings = {
+        'by_intent_id': {},
+        'by_symbol_code': {},
+        'symbol_to_intent': {},
+        'action_to_intent': {},
+        'all_intent_ids': set(),
+        'all_symbol_codes': set(),
+    }
+    
+    for intent in intents:
+        intent_id = _safe_str(intent.get('intent_id'), '')
+        symbol_code = _safe_str(intent.get('symbol_code'), '')
+        
+        if intent_id:
+            mappings['by_intent_id'][intent_id] = intent
+            mappings['all_intent_ids'].add(intent_id)
+        
+        if symbol_code:
+            mappings['by_symbol_code'][symbol_code] = intent
+            mappings['all_symbol_codes'].add(symbol_code)
+            if intent_id:
+                mappings['symbol_to_intent'][symbol_code] = intent_id
+        
+        # Также собираем action_id -> intent_id маппинг
+        # (action_id из кнопок может ссылаться на symbol_code или intent_id)
+        answers = _safe_list(intent.get('answers', []))
+        for answer in answers:
+            if not isinstance(answer, dict):
+                continue
+            actions = _safe_list(answer.get('actions', []))
+            for action in actions:
+                if isinstance(action, dict):
+                    action_id = action.get('action_id', '')
+                    if action_id and intent_id:
+                        # Если action_id совпадает с symbol_code этого интента
+                        if action_id == symbol_code:
+                            mappings['action_to_intent'][action_id] = intent_id
+    
+    return mappings
+
+
+def resolve_target_id(target: str, mappings: Dict) -> str:
+    """
+    Разрешает идентификатор цели в intent_id.
+    Проверяет: intent_id -> symbol_code -> action_id
+    """
+    if not target:
+        return target
+    
+    # Если это уже intent_id
+    if target in mappings.get('all_intent_ids', set()):
+        return target
+    
+    # Если это symbol_code
+    if target in mappings.get('symbol_to_intent', {}):
+        return mappings['symbol_to_intent'][target]
+    
+    # Если это action_id
+    if target in mappings.get('action_to_intent', {}):
+        return mappings['action_to_intent'][target]
+    
+    # Не найдено - возвращаем как есть (внешняя цель)
+    return target
 
 
 def extract_detailed_flow(intent: Dict) -> Dict[str, Any]:

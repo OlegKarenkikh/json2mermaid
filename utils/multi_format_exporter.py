@@ -99,6 +99,60 @@ def _get_edge_style(transition_type: str) -> Tuple[str, str]:
 # GRAPHVIZ DOT EXPORT
 # =============================================================================
 
+def build_id_mappings(intents: List[Dict]) -> Dict[str, Any]:
+    """
+    Строит маппинги для разрешения связей между интентами.
+    Связи могут быть через intent_id, symbol_code или action_id.
+    """
+    mappings = {
+        'by_intent_id': {},
+        'by_symbol_code': {},
+        'symbol_to_intent': {},
+        'all_intent_ids': set(),
+        'all_symbol_codes': set(),
+    }
+    
+    for intent in intents:
+        intent_id = _safe_str(intent.get('intent_id'), '')
+        symbol_code = _safe_str(intent.get('symbol_code'), '')
+        
+        if intent_id:
+            mappings['by_intent_id'][intent_id] = intent
+            mappings['all_intent_ids'].add(intent_id)
+        
+        if symbol_code:
+            mappings['by_symbol_code'][symbol_code] = intent
+            mappings['all_symbol_codes'].add(symbol_code)
+            if intent_id:
+                mappings['symbol_to_intent'][symbol_code] = intent_id
+    
+    return mappings
+
+
+def resolve_target(target: str, mappings: Dict) -> Tuple[str, bool]:
+    """
+    Разрешает идентификатор цели в intent_id.
+    Returns: (resolved_id, is_internal)
+    """
+    if not target:
+        return target, False
+    
+    # Если это intent_id
+    if target in mappings.get('all_intent_ids', set()):
+        return target, True
+    
+    # Если это symbol_code
+    if target in mappings.get('symbol_to_intent', {}):
+        return mappings['symbol_to_intent'][target], True
+    
+    # Если это symbol_code без маппинга на intent_id
+    if target in mappings.get('all_symbol_codes', set()):
+        return target, True
+    
+    # Не найдено - внешняя цель
+    return target, False
+
+
 def export_graphviz_dot(
     intents: Iterable[Dict],
     transitions: Iterable[Transition],
@@ -135,20 +189,23 @@ def export_graphviz_dot(
     intent_list = list(intents)
     transition_list = list(transitions)
     
-    # Собираем все intent_id
-    all_intent_ids = set()
-    intent_by_id = {}
-    for intent in intent_list:
-        intent_id = _safe_str(intent.get('intent_id'), '')
-        if intent_id:
-            all_intent_ids.add(intent_id)
-            intent_by_id[intent_id] = intent
+    # Строим маппинги для разрешения связей
+    mappings = build_id_mappings(intent_list)
+    all_intent_ids = mappings['all_intent_ids']
+    all_symbol_codes = mappings['all_symbol_codes']
+    all_known_ids = all_intent_ids | all_symbol_codes
     
-    # Находим внешние цели
+    intent_by_id = mappings['by_intent_id']
+    
+    # Находим внешние цели (разрешаем через маппинги)
     external_targets = set()
+    internal_edges = 0
     for t in transition_list:
-        if t.target_id and t.target_id not in all_intent_ids:
+        resolved, is_internal = resolve_target(t.target_id, mappings)
+        if not is_internal:
             external_targets.add(t.target_id)
+        else:
+            internal_edges += 1
     
     # Группировка по типам
     if cluster_by_type:
@@ -259,9 +316,18 @@ def export_graphviz_dot(
         f.write('\n'.join(lines))
     
     print(f"\n📊 Graphviz DOT диаграмма создана:")
-    print(f"   Узлов: {len(intent_list) + len(external_targets)}")
+    print(f"   Интентов: {len(intent_list)}")
+    print(f"   Внешних целей: {len(external_targets)}")
+    print(f"   Всего узлов: {len(intent_list) + len(external_targets)}")
     print(f"   Рёбер: {len(transition_list)}")
+    print(f"   Внутренних связей: {internal_edges}")
     print(f"   Файл: {output_path}")
+    
+    if len(transition_list) == 0:
+        print(f"   ⚠️  Переходы не найдены! Проверьте структуру данных.")
+    elif internal_edges == 0:
+        print(f"   ⚠️  Все переходы ведут на внешние цели!")
+        print(f"   💡 Возможно связи через symbol_code - добавьте все интенты в файл")
     
     return output_path
 
